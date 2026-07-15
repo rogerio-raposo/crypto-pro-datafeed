@@ -1,0 +1,43 @@
+name: Update Crypto Pro Data Feed
+
+on:
+workflow_dispatch:
+
+permissions:
+contents: write
+
+jobs:
+update-datafeed:
+name: Collect Binance market data
+runs-on: ubuntu-latest
+
+steps:
+  - name: Check out repository
+    uses: actions/checkout@v4
+
+  - name: Set up Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.12"
+
+  - name: Run Binance data collector
+    run: python datafeed.py
+
+  - name: Validate generated snapshot
+    run: |
+      test -f snapshot.json
+      python -m json.tool snapshot.json > /dev/null
+
+  - name: Commit updated snapshot
+    run: |
+      git config user.name "crypto-pro-datafeed-bot"
+      git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      git add snapshot.json
+
+      if git diff --cached --quiet; then
+        echo "No snapshot changes to commit."
+      else
+        git commit -m "data: update Binance BTC snapshot"
+        git push
+      fi
