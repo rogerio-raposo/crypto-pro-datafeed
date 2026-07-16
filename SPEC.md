@@ -13,6 +13,10 @@
 
 **Status:** Under Review
 
+**Last Update:** 2026/07/16 - Rogerio Raposo
+
+**Compatibility:** Crypto Pro Suite v1.x
+
 ---
 
 # 1. Purpose
