@@ -549,3 +549,317 @@ Successful execution:
   "schema_version": "0.1",
   "module": "Crypto Pro Data Feed",
   "status": "success
+
+# 17. Workflow Requirements
+
+The GitHub Actions workflow shall execute the following sequence.
+
+1. Checkout the repository.
+
+2. Configure Python.
+
+3. Execute datafeed.py.
+
+4. Generate or update status.json.
+
+5. Stop immediately if the collector returns a non-zero exit code.
+
+6. Validate snapshot.json.
+
+7. Validate status.json.
+
+8. Perform semantic validation.
+
+9. Commit updated files.
+
+10. Publish the new snapshot.
+
+The workflow shall never publish partial or invalid market data.
+
+---
+
+# 18. Semantic Validation
+
+JSON syntax validation alone is insufficient.
+
+The workflow shall verify:
+
+- schema_version exists;
+
+- exchange exists;
+
+- symbol exists;
+
+- ticker_24h exists;
+
+- timeframes exist;
+
+- 4h candles exist;
+
+- 1d candles exist;
+
+- 1w candles exist;
+
+- every timeframe contains completed candles;
+
+- snapshot capture time exists;
+
+- status.json indicates success.
+
+Any failed validation shall interrupt publication.
+
+---
+
+# 19. Snapshot Freshness
+
+Every analytical module shall verify snapshot freshness before using market data.
+
+The verification shall include:
+
+- status == success;
+
+- snapshot_updated == true;
+
+- snapshot timestamp within the accepted freshness window;
+
+- supported schema version.
+
+A preserved snapshot from a previous successful execution shall never be presented as current when the latest collection failed.
+
+The acceptable freshness window will be defined by the workflow execution schedule.
+
+---
+
+# 20. Schema Evolution
+
+The field:
+
+```text
+schema_version
+```
+
+defines the Data Feed contract.
+
+Rules:
+
+- optional fields may be added during Draft versions;
+
+- mandatory fields shall not be removed;
+
+- incompatible changes require a new schema version;
+
+- analytical modules shall explicitly declare supported schema versions.
+
+Backward compatibility shall always be preferred.
+
+---
+
+# 21. Security
+
+The Data Feed shall never:
+
+- use authenticated Binance endpoints;
+
+- store Binance credentials;
+
+- store API keys;
+
+- store passwords;
+
+- expose GitHub secrets;
+
+- expose user information.
+
+Only public market data may be collected.
+
+GitHub Secrets shall be used whenever authentication becomes necessary in future versions.
+
+---
+
+# 22. Logging
+
+The collector should produce human-readable execution logs.
+
+At minimum:
+
+- execution start;
+
+- selected Binance host;
+
+- collected endpoints;
+
+- generated files;
+
+- execution result.
+
+Logs should facilitate troubleshooting without exposing sensitive information.
+
+---
+
+# 23. Performance
+
+The implementation should minimize:
+
+- execution time;
+
+- memory consumption;
+
+- network requests.
+
+Only the minimum amount of market data required by the specification shall be downloaded.
+
+---
+
+# 24. Acceptance Criteria
+
+The MVP shall be considered complete only when all the following conditions are satisfied.
+
+Functional requirements:
+
+- Binance public API responds successfully.
+
+- BTCUSDT ticker is collected.
+
+- 4-hour candles are collected.
+
+- Daily candles are collected.
+
+- Weekly candles are collected.
+
+- snapshot.json is generated.
+
+- status.json is generated.
+
+Technical requirements:
+
+- JSON validation succeeds.
+
+- Semantic validation succeeds.
+
+- Required fields exist.
+
+- Workflow finishes successfully.
+
+Publication requirements:
+
+- Updated files are committed automatically.
+
+- Files become publicly accessible.
+
+Operational requirements:
+
+- BTC PRO successfully consumes the snapshot.
+
+- Snapshot date and time are reported.
+
+- Exchange and trading pair are identified.
+
+- The latest execution status is verified before analysis.
+
+---
+
+# 25. Known Limitations
+
+Current MVP limitations:
+
+- BTC only.
+
+- Spot market only.
+
+- Binance only.
+
+- No technical indicators.
+
+- No derivatives.
+
+- No funding rate.
+
+- No open interest.
+
+- No order book.
+
+- No streaming.
+
+- No automatic fallback exchange.
+
+- No scheduling policy yet.
+
+These limitations are intentional and may be removed in future versions.
+
+---
+
+# 26. Future Evolution
+
+Future versions may include:
+
+- ETH
+
+- SOL
+
+- XRP
+
+- SUI
+
+- Additional crypto assets
+
+- Funding Rate
+
+- Open Interest
+
+- BTC Dominance
+
+- Stablecoin metrics
+
+- Fear & Greed Index
+
+- Market breadth
+
+- Multi-exchange validation
+
+- Automatic contingency
+
+- Streaming market data
+
+- Historical database
+
+- Additional analytical feeds
+
+The Data Feed shall remain independent from analytical modules.
+
+---
+
+# 27. Compliance
+
+Every implementation of the Crypto Pro Data Feed shall comply with:
+
+- README.md
+
+- DEVELOPMENT.md
+
+- SPEC.md
+
+Any conflict between implementation and specification shall be resolved in favor of the specification.
+
+---
+
+# 28. Development Rule
+
+Before implementing any new capability:
+
+1. Update the specification.
+
+2. Review the specification.
+
+3. Approve the specification.
+
+4. Implement the code.
+
+5. Review the implementation.
+
+6. Execute the workflow.
+
+7. Validate the published output.
+
+The implementation shall never become the primary source of truth.
+
+The specification is the official contract of the module.
