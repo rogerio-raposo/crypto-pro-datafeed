@@ -293,3 +293,259 @@ Records the result of the latest execution.
 The BTC PRO module must verify this file before using snapshot.json.
 
 The Data Feed shall never publish partial or invalid market data.
+
+# 9. Snapshot Structure
+
+The Data Feed shall generate a single JSON document named:
+
+```text
+snapshot.json
+```
+
+The root object shall contain the following mandatory fields.
+
+```json
+{
+  "schema_version": "0.1",
+  "module": "Crypto Pro Data Feed",
+  "source_status": "primary",
+  "exchange": "Binance Spot",
+  "market_type": "spot",
+  "symbol": "BTCUSDT",
+  "base_asset": "BTC",
+  "quote_asset": "USDT",
+  "captured_at_utc": "",
+  "captured_at_america_recife": "",
+  "data_origin": "Binance Public REST API",
+  "authentication_required": false,
+  "hosts_used": {},
+  "ticker_24h": {},
+  "timeframes": {},
+  "quality_control": {},
+  "methodology_note": ""
+}
+```
+
+No mandatory field may be removed without increasing the schema version.
+
+---
+
+# 10. Timestamp Rules
+
+Every timestamp shall:
+
+- use ISO-8601 format;
+- contain timezone information;
+- preserve UTC time;
+- preserve the snapshot acquisition time in America/Recife.
+
+Example:
+
+```
+2026-07-16T14:30:00+00:00
+```
+
+Historical candle timestamps shall always be stored in UTC.
+
+---
+
+# 11. Ticker Structure
+
+The object:
+
+```text
+ticker_24h
+```
+
+shall contain:
+
+```json
+{
+  "last_price": 0.0,
+  "open_price": 0.0,
+  "high_price": 0.0,
+  "low_price": 0.0,
+  "price_change": 0.0,
+  "price_change_percent": 0.0,
+  "weighted_average_price": 0.0,
+  "base_volume": 0.0,
+  "quote_volume": 0.0,
+  "number_of_trades": 0,
+  "period_open_time_utc": "",
+  "period_close_time_utc": ""
+}
+```
+
+Numeric market values shall be stored as JSON numbers.
+
+String representations of numbers are not allowed.
+
+---
+
+# 12. Timeframe Structure
+
+The object:
+
+```text
+timeframes
+```
+
+shall contain:
+
+```json
+{
+    "4h": {},
+    "1d": {},
+    "1w": {}
+}
+```
+
+Each timeframe object shall contain:
+
+```json
+{
+  "interval": "",
+  "requested_limit": 0,
+  "received_candles": 0,
+  "closed_candles": 0,
+  "first_open_time_utc": "",
+  "last_open_time_utc": "",
+  "latest_closed_candle": {},
+  "candles": []
+}
+```
+
+The values above represent the required schema.
+
+---
+
+# 13. Candle Structure
+
+Every candle inside the array:
+
+```text
+candles
+```
+
+shall contain:
+
+```json
+{
+  "open_time_ms": 0,
+  "open_time_utc": "",
+  "open": 0.0,
+  "high": 0.0,
+  "low": 0.0,
+  "close": 0.0,
+  "base_volume": 0.0,
+  "close_time_ms": 0,
+  "close_time_utc": "",
+  "quote_volume": 0.0,
+  "number_of_trades": 0,
+  "taker_buy_base_volume": 0.0,
+  "taker_buy_quote_volume": 0.0,
+  "is_closed": true
+}
+```
+
+No additional processing shall modify Binance market values.
+
+The Data Feed is responsible only for normalization.
+
+---
+
+# 14. Open and Closed Candles
+
+The Binance API may return the currently open candle.
+
+The Data Feed shall preserve this candle.
+
+The field:
+
+```text
+is_closed
+```
+
+must identify whether the candle has already closed.
+
+Example:
+
+```json
+{
+    "is_closed": false
+}
+```
+
+The latest completed candle shall also be separately identified as:
+
+```text
+latest_closed_candle
+```
+
+Analytical modules shall normally use completed candles for confirmed indicators.
+
+Open candles may be used only for intraperiod interpretation.
+
+---
+
+# 15. Quality Control
+
+A snapshot shall be considered valid only if:
+
+- ticker is available;
+
+- 4-hour candles are available;
+
+- daily candles are available;
+
+- weekly candles are available;
+
+- every timeframe contains at least one completed candle;
+
+- every mandatory field is present;
+
+- JSON syntax is valid.
+
+The object:
+
+```text
+quality_control
+```
+
+shall contain:
+
+```json
+{
+  "ticker_available": true,
+  "required_timeframes": [
+    "4h",
+    "1d",
+    "1w"
+  ],
+  "all_required_timeframes_available": true,
+  "contains_incomplete_current_candle": true,
+  "analysis_should_prefer_closed_candles": true
+}
+```
+
+Future versions may include additional validation fields.
+
+---
+
+# 16. Status File
+
+The Data Feed shall update:
+
+```text
+status.json
+```
+
+on every execution.
+
+Successful execution:
+
+```json
+{
+  "schema_version": "0.1",
+  "module": "Crypto Pro Data Feed",
+  "status": "success
