@@ -1,43 +1,469 @@
 name: Update Crypto Pro Data Feed
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
-contents: write
+  contents: write
+
+concurrency:
+  group: crypto-pro-datafeed
+  cancel-in-progress: false
 
 jobs:
-update-datafeed:
-name: Collect Binance market data
-runs-on: ubuntu-latest
+  update-datafeed:
+    name: Collect and publish market data
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Check out repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Set up Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: "3.12"
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-  - name: Run Binance data collector
-    run: python datafeed.py
+      - name: Display Python version
+        run: python --version
 
-  - name: Validate generated snapshot
-    run: |
-      test -f snapshot.json
-      python -m json.tool snapshot.json > /dev/null
+      - name: Execute Data Feed
+        id: collector
+        continue-on-error: true
+        run: |
+          set +e
+          python datafeed.py
+          exit_code=$?
 
-  - name: Commit updated snapshot
-    run: |
-      git config user.name "crypto-pro-datafeed-bot"
-      git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
 
-      git add snapshot.json
+          if [ "$exit_code" -eq 0 ]; then
+            echo "collection_status=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "collection_status=failure" >> "$GITHUB_OUTPUT"
+          fi
 
-      if git diff --cached --quiet; then
-        echo "No snapshot changes to commit."
-      else
-        git commit -m "data: update Binance BTC snapshot"
-        git push
-      fi
+          exit 0
+
+      - name: Validate status.json
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          status_path = Path("status.json")
+
+          if not status_path.is_file():
+              raise SystemExit("status.json was not generated.")
+
+          with status_path.open(encoding="utf-8") as file:
+              status = json.load(file)
+
+          required_fields = {
+              "schema_version",
+              "module",
+              "status",
+              "last_attempt_at_utc",
+              "last_attempt_at_america_recife",
+              "snapshot_updated",
+              "exchange",
+              "symbol",
+              "reason",
+          }
+
+          missing_fields = required_fields - status.keys()
+
+          if missing_fields:
+              raise SystemExit(
+                  "status.json is missing required fields: "
+                  + ", ".join(sorted(missing_fields))
+              )
+
+          if status["schema_version"] != "0.1":
+              raise SystemExit("Unsupported status schema version.")
+
+          if status["module"] != "Crypto Pro Data Feed":
+              raise SystemExit("Unexpected module in status.json.")
+
+          if status["exchange"] != "Binance Spot":
+              raise SystemExit("Unexpected exchange in status.json.")
+
+          if status["symbol"] != "BTCUSDT":
+              raise SystemExit("Unexpected symbol in status.json.")
+
+          if status["status"] not in {"success", "failure"}:
+              raise SystemExit("Invalid execution status.")
+
+          if status["status"] == "success":
+              if status["snapshot_updated"] is not True:
+                  raise SystemExit(
+                      "Successful execution must set "
+                      "snapshot_updated to true."
+                  )
+
+              if status["reason"] is not None:
+                  raise SystemExit(
+                      "Successful execution must set reason to null."
+                  )
+
+          if status["status"] == "failure":
+              if status["snapshot_updated"] is not False:
+                  raise SystemExit(
+                      "Failed execution must set "
+                      "snapshot_updated to false."
+                  )
+
+              if not isinstance(status["reason"], str):
+                  raise SystemExit(
+                      "Failed execution must provide a reason."
+                  )
+
+              if not status["reason"].strip():
+                  raise SystemExit(
+                      "Failed execution reason cannot be empty."
+                  )
+
+          print("status.json validation succeeded.")
+          print(f"Execution status: {status['status']}")
+          PY
+
+      - name: Validate successful execution consistency
+        if: steps.collector.outputs.collection_status == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          status_path = Path("status.json")
+
+          with status_path.open(encoding="utf-8") as file:
+              status = json.load(file)
+
+          if status["status"] != "success":
+              raise SystemExit(
+                  "Collector returned success, but status.json "
+                  "does not indicate success."
+              )
+
+          if status["snapshot_updated"] is not True:
+              raise SystemExit(
+                  "Collector returned success, but snapshot_updated "
+                  "is not true."
+              )
+
+          print("Successful execution consistency verified.")
+          PY
+
+      - name: Validate failed execution consistency
+        if: steps.collector.outputs.collection_status == 'failure'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          status_path = Path("status.json")
+
+          with status_path.open(encoding="utf-8") as file:
+              status = json.load(file)
+
+          if status["status"] != "failure":
+              raise SystemExit(
+                  "Collector returned failure, but status.json "
+                  "does not indicate failure."
+              )
+
+          if status["snapshot_updated"] is not False:
+              raise SystemExit(
+                  "Collector returned failure, but snapshot_updated "
+                  "is not false."
+              )
+
+          print("Failed execution consistency verified.")
+          PY
+
+      - name: Validate snapshot.json
+        if: steps.collector.outputs.collection_status == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+
+          snapshot_path = Path("snapshot.json")
+
+          if not snapshot_path.is_file():
+              raise SystemExit("snapshot.json was not generated.")
+
+          with snapshot_path.open(encoding="utf-8") as file:
+              snapshot = json.load(file)
+
+          required_root_fields = {
+              "schema_version",
+              "module",
+              "source_status",
+              "exchange",
+              "market_type",
+              "symbol",
+              "base_asset",
+              "quote_asset",
+              "captured_at_utc",
+              "captured_at_america_recife",
+              "data_origin",
+              "authentication_required",
+              "hosts_used",
+              "ticker_24h",
+              "timeframes",
+              "quality_control",
+              "methodology_note",
+          }
+
+          missing_fields = required_root_fields - snapshot.keys()
+
+          if missing_fields:
+              raise SystemExit(
+                  "snapshot.json is missing required fields: "
+                  + ", ".join(sorted(missing_fields))
+              )
+
+          expected_values = {
+              "schema_version": "0.1",
+              "module": "Crypto Pro Data Feed",
+              "source_status": "primary",
+              "exchange": "Binance Spot",
+              "market_type": "spot",
+              "symbol": "BTCUSDT",
+              "base_asset": "BTC",
+              "quote_asset": "USDT",
+              "authentication_required": False,
+          }
+
+          for field, expected_value in expected_values.items():
+              if snapshot[field] != expected_value:
+                  raise SystemExit(
+                      f"Unexpected value for {field}: "
+                      f"{snapshot[field]!r}"
+                  )
+
+          try:
+              datetime.fromisoformat(snapshot["captured_at_utc"])
+              datetime.fromisoformat(
+                  snapshot["captured_at_america_recife"]
+              )
+          except (TypeError, ValueError) as error:
+              raise SystemExit(
+                  f"Invalid snapshot timestamp: {error}"
+              ) from error
+
+          ticker = snapshot["ticker_24h"]
+
+          required_ticker_fields = {
+              "last_price",
+              "open_price",
+              "high_price",
+              "low_price",
+              "price_change",
+              "price_change_percent",
+              "weighted_average_price",
+              "base_volume",
+              "quote_volume",
+              "number_of_trades",
+              "period_open_time_utc",
+              "period_close_time_utc",
+          }
+
+          missing_ticker_fields = (
+              required_ticker_fields - ticker.keys()
+          )
+
+          if missing_ticker_fields:
+              raise SystemExit(
+                  "ticker_24h is missing fields: "
+                  + ", ".join(sorted(missing_ticker_fields))
+              )
+
+          numeric_ticker_fields = {
+              "last_price",
+              "open_price",
+              "high_price",
+              "low_price",
+              "price_change",
+              "price_change_percent",
+              "weighted_average_price",
+              "base_volume",
+              "quote_volume",
+              "number_of_trades",
+          }
+
+          for field in numeric_ticker_fields:
+              if not isinstance(ticker[field], (int, float)):
+                  raise SystemExit(
+                      f"Ticker field {field} is not numeric."
+                  )
+
+          required_intervals = {
+              "4h": 500,
+              "1d": 500,
+              "1w": 260,
+          }
+
+          timeframes = snapshot["timeframes"]
+
+          for interval, expected_limit in required_intervals.items():
+              if interval not in timeframes:
+                  raise SystemExit(
+                      f"Required timeframe {interval} is missing."
+                  )
+
+              timeframe = timeframes[interval]
+
+              required_timeframe_fields = {
+                  "interval",
+                  "requested_limit",
+                  "received_candles",
+                  "closed_candles",
+                  "first_open_time_utc",
+                  "last_open_time_utc",
+                  "latest_closed_candle",
+                  "candles",
+              }
+
+              missing_timeframe_fields = (
+                  required_timeframe_fields - timeframe.keys()
+              )
+
+              if missing_timeframe_fields:
+                  raise SystemExit(
+                      f"Timeframe {interval} is missing fields: "
+                      + ", ".join(
+                          sorted(missing_timeframe_fields)
+                      )
+                  )
+
+              if timeframe["interval"] != interval:
+                  raise SystemExit(
+                      f"Unexpected interval identifier for {interval}."
+                  )
+
+              if timeframe["requested_limit"] != expected_limit:
+                  raise SystemExit(
+                      f"Unexpected requested limit for {interval}."
+                  )
+
+              candles = timeframe["candles"]
+
+              if not isinstance(candles, list):
+                  raise SystemExit(
+                      f"Candles for {interval} are not an array."
+                  )
+
+              if len(candles) < expected_limit:
+                  raise SystemExit(
+                      f"Timeframe {interval} contains too few candles."
+                  )
+
+              if timeframe["received_candles"] != len(candles):
+                  raise SystemExit(
+                      f"received_candles mismatch for {interval}."
+                  )
+
+              closed_candles = [
+                  candle
+                  for candle in candles
+                  if candle.get("is_closed") is True
+              ]
+
+              if not closed_candles:
+                  raise SystemExit(
+                      f"Timeframe {interval} has no closed candles."
+                  )
+
+              if (
+                  timeframe["closed_candles"]
+                  != len(closed_candles)
+              ):
+                  raise SystemExit(
+                      f"closed_candles mismatch for {interval}."
+                  )
+
+              if (
+                  timeframe["latest_closed_candle"]
+                  != closed_candles[-1]
+              ):
+                  raise SystemExit(
+                      f"latest_closed_candle mismatch for {interval}."
+                  )
+
+          quality_control = snapshot["quality_control"]
+
+          if quality_control.get("ticker_available") is not True:
+              raise SystemExit(
+                  "Ticker quality control did not pass."
+              )
+
+          if (
+              quality_control.get(
+                  "all_required_timeframes_available"
+              )
+              is not True
+          ):
+              raise SystemExit(
+                  "Timeframe quality control did not pass."
+              )
+
+          if (
+              quality_control.get(
+                  "analysis_should_prefer_closed_candles"
+              )
+              is not True
+          ):
+              raise SystemExit(
+                  "Closed-candle analysis policy is missing."
+              )
+
+          print("snapshot.json semantic validation succeeded.")
+          print(
+              "Last price:",
+              snapshot["ticker_24h"]["last_price"],
+          )
+          PY
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Stage successful execution files
+        if: steps.collector.outputs.collection_status == 'success'
+        run: |
+          git add snapshot.json status.json
+
+      - name: Stage failed execution status
+        if: steps.collector.outputs.collection_status == 'failure'
+        run: |
+          git add status.json
+
+      - name: Commit and push changes
+        run: |
+          if git diff --cached --quiet; then
+            echo "No file changes to commit."
+            exit 0
+          fi
+
+          if [ "${{ steps.collector.outputs.collection_status }}" = \
+            "success" ]; then
+            commit_message="data: update BTCUSDT market snapshot"
+          else
+            commit_message="data: record Data Feed collection failure"
+          fi
+
+          git commit -m "$commit_message"
+          git push
+
+      - name: Finish with collector failure
+        if: steps.collector.outputs.collection_status == 'failure'
+        run: |
+          echo "The Data Feed collection failed."
+          echo "status.json was published."
+          echo "The latest valid snapshot.json was preserved."
+          exit 1
