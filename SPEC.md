@@ -566,7 +566,7 @@ The GitHub Actions workflow shall execute the following sequence.
 
 4. Generate or update status.json.
 
-5. Stop immediately if the collector returns a non-zero exit code.
+5. Capture the collector exit code without interrupting the workflow before status.json has been validated and published.
 
 6. Validate snapshot.json.
 
@@ -579,6 +579,8 @@ The GitHub Actions workflow shall execute the following sequence.
 10. Publish the new snapshot.
 
 The workflow shall never publish partial or invalid market data.
+The workflow shall finish with a failed status after publishing a valid
+failure status.json whenever the collector returns a non-zero exit code.
 
 ---
 
