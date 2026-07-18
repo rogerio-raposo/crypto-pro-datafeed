@@ -1,871 +1,234 @@
-# Crypto Pro Data Feed
-## Technical Specification (SPEC)
+# Crypto Pro Data Feed Specification
 
-**Document:** SPEC.md
-
-**Project:** Crypto Pro Suite
-
-**Module:** Crypto Pro Data Feed
-
-**Document Version:** Draft 0.1
-
-**Schema Version:** 0.1
-
-**Status:** Under Review
-
-**Last Update:** 2026/07/16 - Rogerio Raposo
-
-**Compatibility:** Crypto Pro Suite v1.x
+**Project:** Crypto Pro Data Feed
+**Document:** Specification
+**Version:** 1.0.0
+**Status:** Stable
+**Owner:** Rogerio Raposo
+**Language:** English
+**Last Updated:** 2026-07-18
+**Documentation Standard:** DOCUMENTATION_STANDARD.md
 
 ---
 
 # 1. Purpose
 
-This document defines the official technical specification of the Crypto Pro Data Feed.
+This document specifies the functional requirements and operational behavior of the Crypto Pro Data Feed.
 
-The Data Feed is responsible exclusively for acquiring, validating, normalizing and publishing market data required by the analytical modules of the Crypto Pro Suite.
-
-The Data Feed performs no market analysis.
-
-Its only responsibility is to provide a reliable, reproducible and auditable market snapshot.
-
-This specification is the contractual definition between the Data Feed and every consumer module.
-
-Any implementation must conform to this document.
+It defines what the system shall do, independently of how it is implemented.
 
 ---
 
 # 2. Scope
 
-The MVP supports only:
+The Crypto Pro Data Feed is responsible for acquiring, validating, normalizing, and publishing cryptocurrency market data for the Crypto Pro Suite.
 
-• Exchange: Binance Spot
-
-• Trading pair: BTCUSDT
-
-• Market: Spot
-
-• Timeframes:
-
-- 4 Hours
-- 1 Day
-- 1 Week
-
-The MVP intentionally does not support:
-
-- additional crypto assets
-
-- perpetual futures
-
-- funding rates
-
-- open interest
-
-- derivatives
-
-- order book
-
-- authenticated Binance endpoints
-
-- user accounts
-
-- API keys
-
-- databases
-
-- streaming
-
-- automatic fallback exchanges
-
-These capabilities belong to future versions.
+This specification applies exclusively to the Data Feed module.
 
 ---
 
-# 3. Design Principles
+# 3. Definitions
 
-The Data Feed follows the principles defined in DEVELOPMENT.md.
-
-Additionally, every implementation shall preserve the following characteristics.
-
-## 3.1 Simplicity
-
-The implementation should remain as small as possible.
-
-Complexity shall only be introduced when clearly justified.
+| Term | Definition |
+|-------|------------|
+| Snapshot | Immutable JSON file containing validated market data. |
+| Status | JSON file describing the outcome of the latest execution. |
+| Producer | Component responsible for publishing market data. |
+| Consumer | Module that reads published JSON artifacts. |
+| Public Data Contract | Official interface between producer and consumers. |
 
 ---
 
-## 3.2 Reliability
+# 4. System Responsibilities
 
-Every published snapshot must be reproducible.
+The system shall:
 
-The same input shall always generate the same output.
-
----
-
-## 3.3 Auditability
-
-Every execution must identify:
-
-- exchange
-
-- symbol
-
-- acquisition time
-
-- data origin
-
-- schema version
-
-- collection status
+- Acquire market data.
+- Validate responses.
+- Normalize information.
+- Publish deterministic artifacts.
+- Preserve the latest valid snapshot.
+- Report execution status.
 
 ---
 
-## 3.4 Single Source of Truth
+# 5. Functional Requirements
 
-The Data Feed is the only component responsible for market data acquisition.
+The Data Feed shall:
 
-Analytical modules must never query exchanges directly.
+FR-001 — Connect to the configured exchange.
 
----
+FR-002 — Retry failed requests.
 
-## 3.5 Separation of Responsibilities
+FR-003 — Validate every response.
 
-The Data Feed:
+FR-004 — Reject invalid data.
 
-✔ acquires data
+FR-005 — Normalize collected information.
 
-✔ validates data
+FR-006 — Generate snapshot.json.
 
-✔ normalizes data
+FR-007 — Generate status.json.
 
-✔ publishes data
+FR-008 — Publish both artifacts.
 
-The Data Feed never:
+FR-009 — Preserve the last valid snapshot after failures.
 
-✖ calculates indicators
-
-✖ performs technical analysis
-
-✖ generates recommendations
-
-✖ produces reports
-
-Those responsibilities belong to BTC PRO and future analytical modules.
+FR-010 — Produce deterministic outputs.
 
 ---
 
-# 4. Architecture
+# 6. Non-Functional Requirements
 
-The MVP architecture is intentionally minimal.
+The Data Feed shall provide:
 
-```
-                Binance Spot REST API
-                        │
-                        ▼
-                  datafeed.py
-                        │
-                        ▼
-                 snapshot.json
-                 status.json
-                        │
-                        ▼
-               GitHub Repository
-                        │
-                        ▼
-                  BTC PRO Module
-```
-
-The Data Feed shall remain independent from every analytical module.
+- Reliability
+- Simplicity
+- Auditability
+- Reproducibility
+- Extensibility
+- Deterministic execution
 
 ---
 
-# 5. Primary Data Source
+# 7. Constraints
 
-Primary exchange:
+The Data Feed shall not:
 
-Binance Spot
+- Perform technical analysis.
+- Generate trading signals.
+- Modify historical snapshots.
+- Publish invalid market data.
+- Require third-party Python packages.
+
+---
+
+# 8. Inputs
+
+Current implementation:
+
+Exchange:
+
+- Binance Spot
 
 Trading Pair:
 
-BTCUSDT
+- BTCUSDT
 
-Market:
-
-Spot
-
-Data source:
-
-Official Binance Public REST API
-
-Authentication:
-
-Not required.
-
-Only official public endpoints shall be used.
+Future versions may support additional exchanges without changing the public contract.
 
 ---
 
-## 5.1 Approved Binance Hosts
+# 9. Outputs
 
-The implementation may try one or more official Binance public hosts.
+The module publishes:
 
-Examples:
+- snapshot.json
+- status.json
 
-- data-api.binance.vision
-
-- api.binance.com
-
-- api1.binance.com
-
-- api2.binance.com
-
-- api3.binance.com
-
-No unofficial mirrors shall be used.
+Both artifacts compose the official public interface.
 
 ---
 
-# 6. Contingency Policy
+# 10. Public Data Contract
 
-The MVP does not implement automatic exchange substitution.
+Consumer modules shall interact exclusively through:
 
-If Binance cannot provide the required data:
+- snapshot.json
+- status.json
 
-- acquisition must stop
-
-- status.json must record the failure
-
-- the latest valid snapshot shall be preserved
-
-- no substitute exchange shall be silently used
-
-Future versions may support the following contingency order:
-
-1. Binance
-
-2. Bybit
-
-3. Bitget
-
-4. OKX
-
-5. MEXC
-
-Every contingency activation shall be explicitly identified in both the snapshot metadata and analytical reports.
+Internal implementation changes shall not modify the published contract without a documented schema revision.
 
 ---
 
-# 7. Workflow
+# 11. Execution Flow
 
-Every execution shall follow exactly the sequence below.
+Each execution shall perform:
 
-1. Acquire market data.
-
-2. Validate data.
-
-3. Normalize data.
-
+1. Acquire data.
+2. Validate.
+3. Normalize.
 4. Build snapshot.
-
-5. Build execution status.
-
-6. Validate generated JSON files.
-
-7. Publish updated files.
-
-No step may be skipped.
+5. Build status.
+6. Publish.
 
 ---
 
-# 8. Output Files
+# 12. Failure Handling
 
-The Data Feed maintains two public operational files.
+Upon failure:
 
-## snapshot.json
-
-Contains the latest successfully validated market snapshot.
-
-A failed execution shall never overwrite a valid snapshot.
-
----
-
-## status.json
-
-Records the result of the latest execution.
-
-The BTC PRO module must verify this file before using snapshot.json.
-
-The Data Feed shall never publish partial or invalid market data.
-
-# 9. Snapshot Structure
-
-The Data Feed shall generate a single JSON document named:
-
-```text
-snapshot.json
-```
-
-The root object shall contain the following mandatory fields.
-
-```json
-{
-  "schema_version": "0.1",
-  "module": "Crypto Pro Data Feed",
-  "source_status": "primary",
-  "exchange": "Binance Spot",
-  "market_type": "spot",
-  "symbol": "BTCUSDT",
-  "base_asset": "BTC",
-  "quote_asset": "USDT",
-  "captured_at_utc": "",
-  "captured_at_america_recife": "",
-  "data_origin": "Binance Public REST API",
-  "authentication_required": false,
-  "hosts_used": {},
-  "ticker_24h": {},
-  "timeframes": {},
-  "quality_control": {},
-  "methodology_note": ""
-}
-```
-
-No mandatory field may be removed without increasing the schema version.
+- snapshot.json shall remain unchanged.
+- status.json shall always be updated.
+- Failure reason shall be recorded.
+- Consumer modules shall detect execution status before processing market data.
 
 ---
 
-# 10. Timestamp Rules
+# 13. Acceptance Criteria
 
-Every timestamp shall:
+The implementation shall be considered compliant when:
 
-- use ISO-8601 format;
-- contain timezone information;
-- preserve UTC time;
-- preserve the snapshot acquisition time in America/Recife.
+AC-001
 
-Example:
+Successful execution publishes both JSON artifacts.
 
-```
-2026-07-16T14:30:00+00:00
-```
+AC-002
 
-Historical candle timestamps shall always be stored in UTC.
+Failed execution preserves snapshot.json.
 
----
+AC-003
 
-# 11. Ticker Structure
+Failed execution updates status.json.
 
-The object:
+AC-004
 
-```text
-ticker_24h
-```
+Published data passes semantic validation.
 
-shall contain:
+AC-005
 
-```json
-{
-  "last_price": 0.0,
-  "open_price": 0.0,
-  "high_price": 0.0,
-  "low_price": 0.0,
-  "price_change": 0.0,
-  "price_change_percent": 0.0,
-  "weighted_average_price": 0.0,
-  "base_volume": 0.0,
-  "quote_volume": 0.0,
-  "number_of_trades": 0,
-  "period_open_time_utc": "",
-  "period_close_time_utc": ""
-}
-```
-
-Numeric market values shall be stored as JSON numbers.
-
-String representations of numbers are not allowed.
+Consumer modules can determine execution status exclusively through status.json.
 
 ---
 
-# 12. Timeframe Structure
+# 14. Compatibility
 
-The object:
+Backward compatibility should be preserved whenever possible.
 
-```text
-timeframes
-```
+Breaking changes require:
 
-shall contain:
-
-```json
-{
-    "4h": {},
-    "1d": {},
-    "1w": {}
-}
-```
-
-Each timeframe object shall contain:
-
-```json
-{
-  "interval": "",
-  "requested_limit": 0,
-  "received_candles": 0,
-  "closed_candles": 0,
-  "first_open_time_utc": "",
-  "last_open_time_utc": "",
-  "latest_closed_candle": {},
-  "candles": []
-}
-```
-
-The values above represent the required schema.
+- Major version increment.
+- Documentation update.
+- Public contract revision.
 
 ---
 
-# 13. Candle Structure
+# 15. Out of Scope
 
-Every candle inside the array:
+This module does not perform:
 
-```text
-candles
-```
-
-shall contain:
-
-```json
-{
-  "open_time_ms": 0,
-  "open_time_utc": "",
-  "open": 0.0,
-  "high": 0.0,
-  "low": 0.0,
-  "close": 0.0,
-  "base_volume": 0.0,
-  "close_time_ms": 0,
-  "close_time_utc": "",
-  "quote_volume": 0.0,
-  "number_of_trades": 0,
-  "taker_buy_base_volume": 0.0,
-  "taker_buy_quote_volume": 0.0,
-  "is_closed": true
-}
-```
-
-No additional processing shall modify Binance market values.
-
-The Data Feed is responsible only for normalization.
+- Technical analysis
+- Portfolio management
+- Institutional ranking
+- Investment recommendations
+- Market interpretation
 
 ---
 
-# 14. Open and Closed Candles
+# 16. Guiding Principle
 
-The Binance API may return the currently open candle.
+> The Data Feed defines what happened, never what it means.
 
-The Data Feed shall preserve this candle.
-
-The field:
-
-```text
-is_closed
-```
-
-must identify whether the candle has already closed.
-
-Example:
-
-```json
-{
-    "is_closed": false
-}
-```
-
-The latest completed candle shall also be separately identified as:
-
-```text
-latest_closed_candle
-```
-
-Analytical modules shall normally use completed candles for confirmed indicators.
-
-Open candles may be used only for intraperiod interpretation.
+Its responsibility ends at publishing trustworthy market data.
 
 ---
 
-# 15. Quality Control
+# Document History
 
-A snapshot shall be considered valid only if:
-
-- ticker is available;
-
-- 4-hour candles are available;
-
-- daily candles are available;
-
-- weekly candles are available;
-
-- every timeframe contains at least one completed candle;
-
-- every mandatory field is present;
-
-- JSON syntax is valid.
-
-The object:
-
-```text
-quality_control
-```
-
-shall contain:
-
-```json
-{
-  "ticker_available": true,
-  "required_timeframes": [
-    "4h",
-    "1d",
-    "1w"
-  ],
-  "all_required_timeframes_available": true,
-  "contains_incomplete_current_candle": true,
-  "analysis_should_prefer_closed_candles": true
-}
-```
-
-Future versions may include additional validation fields.
+| Version | Date | Description |
+|---------|------------|-------------|
+| 1.0.0 | 2026-07-18 | First stable release. |
 
 ---
 
-# 16. Status File
-
-The Data Feed shall update:
-
-```text
-status.json
-```
-
-on every execution.
-
-Successful execution:
-
-```json
-{
-  "schema_version": "0.1",
-  "module": "Crypto Pro Data Feed",
-  "status": "success
-
-# 17. Workflow Requirements
-
-The GitHub Actions workflow shall execute the following sequence.
-
-1. Checkout the repository.
-
-2. Configure Python.
-
-3. Execute datafeed.py.
-
-4. Generate or update status.json.
-
-5. Capture the collector exit code without interrupting the workflow before status.json has been validated and published.
-
-6. Validate snapshot.json.
-
-7. Validate status.json.
-
-8. Perform semantic validation.
-
-9. Commit updated files.
-
-10. Publish the new snapshot.
-
-The workflow shall never publish partial or invalid market data.
-The workflow shall finish with a failed status after publishing a valid
-failure status.json whenever the collector returns a non-zero exit code.
-
----
-
-# 18. Semantic Validation
-
-JSON syntax validation alone is insufficient.
-
-The workflow shall verify:
-
-- schema_version exists;
-
-- exchange exists;
-
-- symbol exists;
-
-- ticker_24h exists;
-
-- timeframes exist;
-
-- 4h candles exist;
-
-- 1d candles exist;
-
-- 1w candles exist;
-
-- every timeframe contains completed candles;
-
-- snapshot capture time exists;
-
-- status.json indicates success.
-
-Any failed validation shall interrupt publication.
-
----
-
-# 19. Snapshot Freshness
-
-Every analytical module shall verify snapshot freshness before using market data.
-
-The verification shall include:
-
-- status == success;
-
-- snapshot_updated == true;
-
-- snapshot timestamp within the accepted freshness window;
-
-- supported schema version.
-
-A preserved snapshot from a previous successful execution shall never be presented as current when the latest collection failed.
-
-The acceptable freshness window will be defined by the workflow execution schedule.
-
----
-
-# 20. Schema Evolution
-
-The field:
-
-```text
-schema_version
-```
-
-defines the Data Feed contract.
-
-Rules:
-
-- optional fields may be added during Draft versions;
-
-- mandatory fields shall not be removed;
-
-- incompatible changes require a new schema version;
-
-- analytical modules shall explicitly declare supported schema versions.
-
-Backward compatibility shall always be preferred.
-
----
-
-# 21. Security
-
-The Data Feed shall never:
-
-- use authenticated Binance endpoints;
-
-- store Binance credentials;
-
-- store API keys;
-
-- store passwords;
-
-- expose GitHub secrets;
-
-- expose user information.
-
-Only public market data may be collected.
-
-GitHub Secrets shall be used whenever authentication becomes necessary in future versions.
-
----
-
-# 22. Logging
-
-The collector should produce human-readable execution logs.
-
-At minimum:
-
-- execution start;
-
-- selected Binance host;
-
-- collected endpoints;
-
-- generated files;
-
-- execution result.
-
-Logs should facilitate troubleshooting without exposing sensitive information.
-
----
-
-# 23. Performance
-
-The implementation should minimize:
-
-- execution time;
-
-- memory consumption;
-
-- network requests.
-
-Only the minimum amount of market data required by the specification shall be downloaded.
-
----
-
-# 24. Acceptance Criteria
-
-The MVP shall be considered complete only when all the following conditions are satisfied.
-
-Functional requirements:
-
-- Binance public API responds successfully.
-
-- BTCUSDT ticker is collected.
-
-- 4-hour candles are collected.
-
-- Daily candles are collected.
-
-- Weekly candles are collected.
-
-- snapshot.json is generated.
-
-- status.json is generated.
-
-Technical requirements:
-
-- JSON validation succeeds.
-
-- Semantic validation succeeds.
-
-- Required fields exist.
-
-- Workflow finishes successfully.
-
-Publication requirements:
-
-- Updated files are committed automatically.
-
-- Files become publicly accessible.
-
-Operational requirements:
-
-- BTC PRO successfully consumes the snapshot.
-
-- Snapshot date and time are reported.
-
-- Exchange and trading pair are identified.
-
-- The latest execution status is verified before analysis.
-
----
-
-# 25. Known Limitations
-
-Current MVP limitations:
-
-- BTC only.
-
-- Spot market only.
-
-- Binance only.
-
-- No technical indicators.
-
-- No derivatives.
-
-- No funding rate.
-
-- No open interest.
-
-- No order book.
-
-- No streaming.
-
-- No automatic fallback exchange.
-
-- No scheduling policy yet.
-
-These limitations are intentional and may be removed in future versions.
-
----
-
-# 26. Future Evolution
-
-Future versions may include:
-
-- ETH
-
-- SOL
-
-- XRP
-
-- SUI
-
-- Additional crypto assets
-
-- Funding Rate
-
-- Open Interest
-
-- BTC Dominance
-
-- Stablecoin metrics
-
-- Fear & Greed Index
-
-- Market breadth
-
-- Multi-exchange validation
-
-- Automatic contingency
-
-- Streaming market data
-
-- Historical database
-
-- Additional analytical feeds
-
-The Data Feed shall remain independent from analytical modules.
-
----
-
-# 27. Compliance
-
-Every implementation of the Crypto Pro Data Feed shall comply with:
-
-- README.md
-
-- DEVELOPMENT.md
-
-- SPEC.md
-
-Any conflict between implementation and specification shall be resolved in favor of the specification.
-
----
-
-# 28. Development Rule
-
-Before implementing any new capability:
-
-1. Update the specification.
-
-2. Review the specification.
-
-3. Approve the specification.
-
-4. Implement the code.
-
-5. Review the implementation.
-
-6. Execute the workflow.
-
-7. Validate the published output.
-
-The implementation shall never become the primary source of truth.
-
-The specification is the official contract of the module.
+**End of Document**
