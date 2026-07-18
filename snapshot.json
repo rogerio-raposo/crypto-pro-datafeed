@@ -7,8 +7,8 @@
   "symbol": "BTCUSDT",
   "base_asset": "BTC",
   "quote_asset": "USDT",
-  "captured_at_utc": "2026-07-18T13:16:06.801042+00:00",
-  "captured_at_america_recife": "2026-07-18T10:16:06.801042-03:00",
+  "captured_at_utc": "2026-07-18T13:45:18.129873+00:00",
+  "captured_at_america_recife": "2026-07-18T10:45:18.129873-03:00",
   "data_origin": "Binance Public REST API",
   "authentication_required": false,
   "hosts_used": {
@@ -18,18 +18,18 @@
     "candles_1w": "https://data-api.binance.vision"
   },
   "ticker_24h": {
-    "last_price": 64025.99,
-    "open_price": 62854.24,
+    "last_price": 64056.51,
+    "open_price": 62552.48,
     "high_price": 64387.99,
-    "low_price": 62537.56,
-    "price_change": 1171.75,
-    "price_change_percent": 1.864,
-    "weighted_average_price": 63756.14380519,
-    "base_volume": 11874.77692,
-    "quote_volume": 757089984.9660214,
-    "number_of_trades": 2136445,
-    "period_open_time_utc": "2026-07-17T13:16:07.006000+00:00",
-    "period_close_time_utc": "2026-07-18T13:16:07.006000+00:00"
+    "low_price": 62538.45,
+    "price_change": 1504.03,
+    "price_change_percent": 2.404,
+    "weighted_average_price": 63817.8422475,
+    "base_volume": 11329.5504,
+    "quote_volume": 723027460.1623188,
+    "number_of_trades": 2014001,
+    "period_open_time_utc": "2026-07-17T13:45:18.001000+00:00",
+    "period_close_time_utc": "2026-07-18T13:45:18.001000+00:00"
   },
   "timeframes": {
     "4h": {
@@ -8045,15 +8045,15 @@
           "open_time_utc": "2026-07-18T12:00:00+00:00",
           "open": 64069.89,
           "high": 64274.47,
-          "low": 63982.76,
-          "close": 64025.99,
-          "base_volume": 724.74367,
+          "low": 63963.0,
+          "close": 64056.52,
+          "base_volume": 834.34732,
           "close_time_ms": 1784390399999,
           "close_time_utc": "2026-07-18T15:59:59.999000+00:00",
-          "quote_volume": 46477497.4669078,
-          "number_of_trades": 90794,
-          "taker_buy_base_volume": 399.97815,
-          "taker_buy_quote_volume": 25657993.8318917,
+          "quote_volume": 53494984.6341567,
+          "number_of_trades": 121811,
+          "taker_buy_base_volume": 455.4156,
+          "taker_buy_quote_volume": 29207715.0419786,
           "is_closed": false
         }
       ]
@@ -16072,14 +16072,14 @@
           "open": 63931.67,
           "high": 64274.47,
           "low": 63886.65,
-          "close": 64025.99,
-          "base_volume": 4147.7025,
+          "close": 64056.51,
+          "base_volume": 4257.3097,
           "close_time_ms": 1784419199999,
           "close_time_utc": "2026-07-18T23:59:59.999000+00:00",
-          "quote_volume": 265465283.3081465,
-          "number_of_trades": 445367,
-          "taker_buy_base_volume": 2114.04017,
-          "taker_buy_quote_volume": 135318779.9085653,
+          "quote_volume": 272482997.9422343,
+          "number_of_trades": 476362,
+          "taker_buy_base_volume": 2169.47545,
+          "taker_buy_quote_volume": 138868362.1822539,
           "is_closed": false
         }
       ]
@@ -20258,14 +20258,14 @@
           "open": 63780.0,
           "high": 65600.0,
           "low": 61824.97,
-          "close": 64025.99,
-          "base_volume": 101738.93647,
+          "close": 64056.52,
+          "base_volume": 101848.54541,
           "close_time_ms": 1784505599999,
           "close_time_utc": "2026-07-19T23:59:59.999000+00:00",
-          "quote_volume": 6492109253.425684,
-          "number_of_trades": 15597720,
-          "taker_buy_base_volume": 49458.19489,
-          "taker_buy_quote_volume": 3157241062.4655194,
+          "quote_volume": 6499127079.518117,
+          "number_of_trades": 15628716,
+          "taker_buy_base_volume": 49513.63191,
+          "taker_buy_quote_volume": 3160790756.1975527,
           "is_closed": false
         }
       ]

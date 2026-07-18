@@ -1,11 +1,11 @@
 {
   "schema_version": "0.1",
   "module": "Crypto Pro Data Feed",
-  "status": "failure",
-  "last_attempt_at_utc": "2026-07-18T13:40:55.842986+00:00",
-  "last_attempt_at_america_recife": "2026-07-18T10:40:55.842986-03:00",
-  "snapshot_updated": false,
+  "status": "success",
+  "last_attempt_at_utc": "2026-07-18T13:45:18.129873+00:00",
+  "last_attempt_at_america_recife": "2026-07-18T10:45:18.129873-03:00",
+  "snapshot_updated": true,
   "exchange": "Binance Spot",
   "symbol": "BTCUSDT",
-  "reason": "Controlled failure test: simulate aquisition failure."
+  "reason": null
 }
