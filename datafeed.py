@@ -30,7 +30,7 @@ MODULE_NAME = "Crypto Pro Data Feed"
 PRIMARY_EXCHANGE = "Binance Spot"
 MARKET_TYPE = "spot"
 
-SYMBOL = "INVALIDUSDT"
+SYMBOL = "BTCUSDT"
 BASE_ASSET = "BTC"
 QUOTE_ASSET = "USDT"
 
@@ -461,6 +461,9 @@ def create_snapshot(
     captured_at_recife: datetime,
 ) -> dict[str, Any]:
     """Acquire all required data and build the market snapshot."""
+
+    raise DataFeedError ("Controlled failure test: simulate aquisition failure.")
+    
     captured_at_ms = int(captured_at_utc.timestamp() * 1000)
 
     print("Starting Crypto Pro Data Feed.", flush=True)
