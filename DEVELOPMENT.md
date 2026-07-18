@@ -1,249 +1,274 @@
-DEVELOPMENT.md
+# Crypto Pro Data Feed Development Guide
 
-Crypto Pro Suite — Development Standard
-
-Version: Draft 0.1
-
----
-
-Purpose
-
-This document defines the software development standards adopted by the Crypto Pro Suite.
-
-Its objective is to ensure consistency, maintainability, reproducibility and code quality throughout the project.
+**Project:** Crypto Pro Data Feed
+**Document:** Development Guide
+**Version:** 1.0.0
+**Status:** Stable
+**Owner:** Rogerio Raposo
+**Language:** English
+**Last Updated:** 2026-07-18
+**Documentation Standard:** DOCUMENTATION_STANDARD.md
 
 ---
 
-General Principles
+# 1. Purpose
 
-The project follows these principles:
+This document defines the engineering practices, development workflow, and maintenance guidelines for the Crypto Pro Data Feed.
 
-- Simplicity
-- Reliability
-- Reproducibility
-- Modularity
-- Readability
-- Maintainability
-- Auditability
-
-Whenever there is a trade-off between simplicity and unnecessary complexity, simplicity shall prevail.
+Its purpose is to ensure that future development preserves the architectural principles established by the project.
 
 ---
 
-Programming Language
+# 2. Development Philosophy
 
-Current primary language:
+Development shall prioritize:
 
-- Python 3
+- Simplicity over complexity
+- Reliability over feature quantity
+- Deterministic behavior
+- Explicit code
+- Ease of maintenance
+- Long-term sustainability
 
-Future components may use other languages if technically justified.
+Every implementation decision should improve the system without compromising its stability.
 
 ---
 
-Naming Convention
+# 3. Repository Structure
 
-All source code shall be written in English.
+```
+.
+├── .github/
+│   └── workflows/
+├── datafeed.py
+├── snapshot.json
+├── status.json
+├── README.md
+├── SPEC.md
+├── ARCHITECTURE.md
+├── DEVELOPMENT.md
+├── DOCUMENTATION_STANDARD.md
+├── CHANGELOG.md
+├── ROADMAP.md
+├── CONTRIBUTING.md
+└── LICENSE
+```
+
+---
+
+# 4. Development Environment
+
+Current requirements:
+
+- Python 3.11 or newer
+- Standard Library only
+- Git
+- GitHub Actions
+
+No external Python dependencies are required.
+
+---
+
+# 5. Coding Standards
+
+Development should follow these principles:
+
+- Prefer explicit code over implicit behavior.
+- Keep functions focused on a single responsibility.
+- Avoid unnecessary abstractions.
+- Use descriptive names.
+- Fail explicitly.
+- Keep execution deterministic.
+- Preserve backward compatibility whenever possible.
+
+---
+
+# 6. Error Handling
+
+Errors shall be handled consistently.
+
+Guidelines:
+
+- Never suppress exceptions silently.
+- Generate meaningful error messages.
+- Update `status.json` for every execution.
+- Never overwrite a valid snapshot after failure.
+- Preserve execution traceability.
+
+---
+
+# 7. Data Integrity
+
+The Data Feed shall guarantee:
+
+- Semantic validation of external responses.
+- Atomic publication of artifacts.
+- Immutable published snapshots.
+- Deterministic outputs.
+
+Data integrity always takes precedence over execution success.
+
+---
+
+# 8. Testing Strategy
+
+Every relevant change should be validated through the following tests.
+
+## Functional Tests
+
+Verify:
+
+- Successful execution.
+- JSON generation.
+- Snapshot publication.
+- Status publication.
+
+---
+
+## Failure Tests
+
+Verify:
+
+- Snapshot preservation.
+- Status update.
+- Error reporting.
+- Workflow failure behavior.
+
+---
+
+## Regression Tests
+
+Every modification shall preserve:
+
+- JSON schema compatibility.
+- Public contract compatibility.
+- Existing consumer behavior.
+
+---
+
+## Manual Validation Checklist
+
+Before release, verify:
+
+- Snapshot generation.
+- Status generation.
+- Failure handling.
+- Documentation consistency.
+- GitHub Actions execution.
+
+---
+
+# 9. Git Workflow
+
+Recommended workflow:
+
+1. Create a feature branch.
+2. Implement changes.
+3. Validate functionality.
+4. Update documentation.
+5. Review changes.
+6. Merge into the main branch.
+
+Every commit should represent a coherent engineering change.
+
+---
+
+# 10. Release Process
+
+Each release should follow the sequence below.
+
+1. Complete development.
+2. Execute validation tests.
+3. Review documentation.
+4. Update document versions.
+5. Update CHANGELOG.
+6. Create Git tag.
+7. Publish GitHub Release.
+
+Releases should never be created without corresponding documentation updates.
+
+---
+
+# 11. Versioning Policy
+
+The project follows Semantic Versioning.
+
+Major:
+
+Breaking changes.
+
+Minor:
+
+New features.
+
+Patch:
+
+Bug fixes, documentation improvements, or internal refinements.
 
 Examples:
 
-- variables
-- functions
-- classes
-- constants
-- filenames
-- directories
-
-User-facing reports and documentation may be written in Portuguese.
+- 1.0.0
+- 1.1.0
+- 1.1.1
+- 2.0.0
 
 ---
 
-Coding Style
+# 12. Documentation Requirements
 
-The project adopts:
+Engineering changes shall keep the following documents synchronized:
 
-- PEP 8
-- Type hints whenever practical
-- Meaningful variable names
-- Small functions
-- Single Responsibility Principle
+- README.md
+- SPEC.md
+- ARCHITECTURE.md
+- DEVELOPMENT.md
+- CHANGELOG.md
+- ROADMAP.md
 
-Avoid unnecessary abbreviations.
-
-Prefer:
-
-market_snapshot
-
-instead of
-
-ms
+Documentation is considered part of the implementation.
 
 ---
 
-Constants
+# 13. Future Development Guidelines
 
-Avoid hardcoded values.
+Future enhancements should:
 
-Configuration values shall be defined as constants.
+- Preserve the public JSON contract.
+- Preserve deterministic behavior.
+- Preserve snapshot immutability.
+- Preserve consumer independence.
+- Maintain low operational complexity.
 
-Example:
-
-PRIMARY_EXCHANGE = "Binance"
-DEFAULT_SYMBOL = "BTCUSDT"
-REQUEST_TIMEOUT_SECONDS = 20
-
----
-
-Error Handling
-
-Errors shall never be silently ignored.
-
-Every failure should contain enough information to reproduce the problem.
-
-Whenever possible, log:
-
-- Exchange
-- Endpoint
-- Date
-- Time
-- Error message
-- HTTP status (if applicable)
+Whenever possible, new functionality should extend the existing architecture instead of replacing it.
 
 ---
 
-Data Acquisition
+# 14. Engineering Principles
 
-Current policy:
+The following principles guide every engineering decision.
 
-Primary source:
-
-- Binance Spot
-
-Contingency:
-
-- Bybit
-
-A substitute exchange shall only be used if Binance is unavailable.
-
-Whenever contingency is activated, the generated report must explicitly state:
-
-- reason
-- substitute exchange
-- timestamp
+- Simplicity scales better than complexity.
+- Reliability is more valuable than feature quantity.
+- Documentation is part of the product.
+- Stable interfaces enable sustainable growth.
+- Every new feature must justify its maintenance cost.
 
 ---
 
-Snapshot Policy
+# Guiding Principle
 
-No analytical module shall execute without a valid market snapshot.
+> Sustainable software is built through disciplined engineering, not accumulated features.
 
-The snapshot is considered the single source of truth for every analysis.
-
----
-
-Project Structure
-
-Each module should have a single responsibility.
-
-Avoid unnecessary dependencies between modules.
-
-Future architecture:
-
-- Data Feed
-- BTC PRO
-- ETH PRO
-- Ranking Institucional
-- Capital Rotation
-- Radar de Narrativas
+The long-term value of the Crypto Pro Data Feed depends on preserving architectural consistency while allowing controlled evolution.
 
 ---
 
-Documentation
+# Document History
 
-Every relevant component shall contain:
-
-- purpose
-- inputs
-- outputs
-- assumptions
-- limitations
-
-README files should explain how to use the component.
+| Version | Date | Description |
+|---------|------------|-------------|
+| 1.0.0 | 2026-07-18 | First stable release. |
 
 ---
 
-Versioning
-
-Development versions:
-
-Draft 0.x
-
-Stable versions:
-
-v1.x.x
-
-Breaking changes shall be documented before implementation.
-
----
-
-Commit Convention
-
-Use Conventional Commits.
-
-Examples:
-
-docs: update README
-
-feat: add Binance data collector
-
-fix: handle Binance timeout
-
-refactor: simplify snapshot generation
-
-test: add snapshot validation
-
-chore: configure GitHub Actions
-
----
-
-Code Quality
-
-Recommended tools:
-
-- Black
-- Ruff
-- pytest
-
-Future:
-
-- mypy
-
-Tool adoption should remain proportional to the project complexity.
-
----
-
-Security
-
-Never commit:
-
-- passwords
-- API keys
-- tokens
-- secrets
-
-Use GitHub Secrets whenever authentication becomes necessary.
-
----
-
-Development Philosophy
-
-The project is intended to evolve incrementally.
-
-A working and simple solution is preferred over a complex architecture introduced prematurely.
-
-Every new component should be designed to be reusable by future modules of the Crypto Pro Suite.
-
----
-
-Golden Rule
-
-Write code that can be understood, maintained and audited without requiring knowledge from previous ChatGPT conversations.
+**End of Document**
