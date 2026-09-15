@@ -1,265 +1,111 @@
 # Crypto Pro Data Feed Development Guide
 
-**Project:** Crypto Pro Data Feed
-**Document:** Development Guide
-**Version:** 1.0.0
-**Status:** Stable
-**Owner:** Rogerio Raposo
-**Language:** English
-**Last Updated:** 2026-07-18
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+**Project:** Crypto Pro Data Feed  
+**Document:** Development Guide  
+**Version:** 1.0.0  
+**Status:** Stable  
+**Owner:** Rogerio Raposo  
+**Language:** English  
+**Last Updated:** 2026-09-15  
+**Documentation Standard:** [DOCUMENTATION_STANDARD.md](DOCUMENTATION_STANDARD.md)
 
 ---
 
 # 1. Purpose
 
-This document defines the engineering practices, development workflow, and maintenance guidelines for the Crypto Pro Data Feed.
-
-Its purpose is to ensure that future development preserves the architectural principles established by the project.
-
----
+This document defines engineering practices, development workflow, validation strategy, and maintenance guidelines for the Crypto Pro Data Feed.
 
 # 2. Development Philosophy
 
-Development shall prioritize:
-
-- Simplicity over complexity
-- Reliability over feature quantity
-- Deterministic behavior
-- Explicit code
-- Ease of maintenance
-- Long-term sustainability
-
-Every implementation decision should improve the system without compromising its stability.
-
----
+Development shall prioritize simplicity, reliability, deterministic behavior, explicit code, ease of maintenance, and long-term sustainability. Every feature must justify its maintenance cost.
 
 # 3. Repository Structure
 
-```
-.
+```text
+crypto-pro-datafeed/
 ├── .github/
 │   └── workflows/
-├── datafeed.py
-├── snapshot.json
-├── status.json
-├── README.md
-├── SPEC.md
-├── ARCHITECTURE.md
-├── DEVELOPMENT.md
-├── DOCUMENTATION_STANDARD.md
+│       └── update-datafeed.yml
+├── src/
+│   └── datafeed.py
+├── data/
+│   ├── snapshot.json
+│   └── status.json
+├── docs/
+│   ├── DOCUMENTATION_OVERVIEW.md
+│   ├── DOCUMENTATION_STANDARD.md
+│   ├── SPEC.md
+│   ├── ARCHITECTURE.md
+│   ├── DEVELOPMENT.md
+│   └── ROADMAP.md
+├── .gitignore
 ├── CHANGELOG.md
-├── ROADMAP.md
 ├── CONTRIBUTING.md
-└── LICENSE
+├── LICENSE
+└── README.md
 ```
 
----
+A `tests/` directory shall be introduced only when automated tests are added; empty placeholder directories are intentionally avoided.
 
 # 4. Development Environment
 
-Current requirements:
+Version 1.0.0 uses Python 3.12 in GitHub Actions and requires only the Python Standard Library, Git, and GitHub Actions. Local execution from the repository root is:
 
-- Python 3.11 or newer
-- Standard Library only
-- Git
-- GitHub Actions
-
-No external Python dependencies are required.
-
----
+```bash
+python src/datafeed.py
+```
 
 # 5. Coding Standards
 
-Development should follow these principles:
+Prefer explicit behavior, focused functions, descriptive names, clear failures, deterministic execution, and backward-compatible interfaces. Avoid unnecessary abstractions and external dependencies.
 
-- Prefer explicit code over implicit behavior.
-- Keep functions focused on a single responsibility.
-- Avoid unnecessary abstractions.
-- Use descriptive names.
-- Fail explicitly.
-- Keep execution deterministic.
-- Preserve backward compatibility whenever possible.
+# 6. Data Integrity and Error Handling
 
----
+Every execution shall update `data/status.json`. A failure shall never overwrite a valid `data/snapshot.json`. JSON publication shall remain atomic and external responses shall be semantically validated before publication.
 
-# 6. Error Handling
+# 7. Testing Strategy
 
-Errors shall be handled consistently.
+Until automated tests are introduced, relevant changes require functional, failure, regression, and manual validation. Validation must cover successful JSON generation, snapshot preservation on failure, status reporting, schema compatibility, documentation consistency, and GitHub Actions behavior.
 
-Guidelines:
+# 8. Git Workflow
 
-- Never suppress exceptions silently.
-- Generate meaningful error messages.
-- Update `status.json` for every execution.
-- Never overwrite a valid snapshot after failure.
-- Preserve execution traceability.
+Use a feature or refactor branch, implement one coherent concern, validate functionality, update documentation, review the complete diff, and merge only after the branch is consistent with `main` and release requirements.
 
----
+# 9. Workflow Validation
 
-# 7. Data Integrity
-
-The Data Feed shall guarantee:
-
-- Semantic validation of external responses.
-- Atomic publication of artifacts.
-- Immutable published snapshots.
-- Deterministic outputs.
-
-Data integrity always takes precedence over execution success.
-
----
-
-# 8. Testing Strategy
-
-Every relevant change should be validated through the following tests.
-
-## Functional Tests
-
-Verify:
-
-- Successful execution.
-- JSON generation.
-- Snapshot publication.
-- Status publication.
-
----
-
-## Failure Tests
-
-Verify:
-
-- Snapshot preservation.
-- Status update.
-- Error reporting.
-- Workflow failure behavior.
-
----
-
-## Regression Tests
-
-Every modification shall preserve:
-
-- JSON schema compatibility.
-- Public contract compatibility.
-- Existing consumer behavior.
-
----
-
-## Manual Validation Checklist
-
-Before release, verify:
-
-- Snapshot generation.
-- Status generation.
-- Failure handling.
-- Documentation consistency.
-- GitHub Actions execution.
-
----
-
-# 9. Git Workflow
-
-Recommended workflow:
-
-1. Create a feature branch.
-2. Implement changes.
-3. Validate functionality.
-4. Update documentation.
-5. Review changes.
-6. Merge into the main branch.
-
-Every commit should represent a coherent engineering change.
-
----
+`.github/workflows/update-datafeed.yml` must execute `python src/datafeed.py`, validate `data/status.json`, validate `data/snapshot.json` on success, stage the appropriate files, and preserve the valid snapshot on collector failure.
 
 # 10. Release Process
 
-Each release should follow the sequence below.
+```text
+Development
+    ↓
+Validation
+    ↓
+Documentation Review
+    ↓
+Version Review
+    ↓
+CHANGELOG
+    ↓
+Git Tag
+    ↓
+GitHub Release
+```
 
-1. Complete development.
-2. Execute validation tests.
-3. Review documentation.
-4. Update document versions.
-5. Update CHANGELOG.
-6. Create Git tag.
-7. Publish GitHub Release.
+A release shall not be completed while implementation, documentation, or public paths are inconsistent.
 
-Releases should never be created without corresponding documentation updates.
+# 11. Documentation Requirements
 
----
+Engineering changes shall keep [SPEC.md](SPEC.md), [ARCHITECTURE.md](ARCHITECTURE.md), this guide, [ROADMAP.md](ROADMAP.md), [DOCUMENTATION_OVERVIEW.md](DOCUMENTATION_OVERVIEW.md), the root [README.md](../README.md), and [CHANGELOG.md](../CHANGELOG.md) synchronized when applicable.
 
-# 11. Versioning Policy
+# 12. Future Development Guidelines
 
-The project follows Semantic Versioning.
-
-Major:
-
-Breaking changes.
-
-Minor:
-
-New features.
-
-Patch:
-
-Bug fixes, documentation improvements, or internal refinements.
-
-Examples:
-
-- 1.0.0
-- 1.1.0
-- 1.1.1
-- 2.0.0
-
----
-
-# 12. Documentation Requirements
-
-Engineering changes shall keep the following documents synchronized:
-
-- README.md
-- SPEC.md
-- ARCHITECTURE.md
-- DEVELOPMENT.md
-- CHANGELOG.md
-- ROADMAP.md
-
-Documentation is considered part of the implementation.
-
----
-
-# 13. Future Development Guidelines
-
-Future enhancements should:
-
-- Preserve the public JSON contract.
-- Preserve deterministic behavior.
-- Preserve snapshot immutability.
-- Preserve consumer independence.
-- Maintain low operational complexity.
-
-Whenever possible, new functionality should extend the existing architecture instead of replacing it.
-
----
-
-# 14. Engineering Principles
-
-The following principles guide every engineering decision.
-
-- Simplicity scales better than complexity.
-- Reliability is more valuable than feature quantity.
-- Documentation is part of the product.
-- Stable interfaces enable sustainable growth.
-- Every new feature must justify its maintenance cost.
-
----
+Future enhancements should preserve the public JSON contract, deterministic behavior, snapshot preservation, consumer independence, and low operational complexity. New functionality should extend the architecture rather than replace stable foundations whenever possible.
 
 # Guiding Principle
 
 > Sustainable software is built through disciplined engineering, not accumulated features.
-
-The long-term value of the Crypto Pro Data Feed depends on preserving architectural consistency while allowing controlled evolution.
 
 ---
 
@@ -267,7 +113,8 @@ The long-term value of the Crypto Pro Data Feed depends on preserving architectu
 
 | Version | Date | Description |
 |---------|------------|-------------|
-| 1.0.0 | 2026-07-18 | First stable release. |
+| 1.0.0 | 2026-07-18 | First stable baseline. |
+| 1.0.0 | 2026-09-15 | Updated repository paths, workflow guidance, and documentation references. |
 
 ---
 
