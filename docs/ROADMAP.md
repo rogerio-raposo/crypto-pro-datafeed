@@ -1,78 +1,43 @@
 # Crypto Pro Data Feed Roadmap
 
-**Project:** Crypto Pro Data Feed
-**Document:** Roadmap
-**Version:** 1.0.0
-**Status:** Stable
-**Owner:** Rogerio Raposo
-**Language:** English
-**Last Updated:** 2026-07-18
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+**Project:** Crypto Pro Data Feed  
+**Document:** Roadmap  
+**Version:** 1.0.0  
+**Status:** Stable  
+**Owner:** Rogerio Raposo  
+**Language:** English  
+**Last Updated:** 2026-09-15  
+**Documentation Standard:** [DOCUMENTATION_STANDARD.md](DOCUMENTATION_STANDARD.md)
 
 ---
 
 # Vision
 
-The Crypto Pro Data Feed aims to become the standardized market data layer for the entire Crypto Pro Suite.
+The Crypto Pro Data Feed aims to become the standardized market data layer for the Crypto Pro Suite.
 
----
+# Version 1.0.0 — Foundation
 
-# Current Release
+Current baseline includes Binance Spot, BTCUSDT, snapshot publication, status reporting, the public JSON contract, GitHub Actions execution, structured `src/`, `data/`, and `docs/` directories, and governed engineering documentation.
 
-## Version 1.0.0
+# Version 1.1 — Configurability
 
-Completed:
+Planned capabilities include multiple trading pairs, configurable symbols, and improved validation.
 
-- Binance Spot
-- BTCUSDT
-- Snapshot publication
-- Status reporting
-- Public JSON contract
-- GitHub Actions
-- Engineering documentation
+# Version 1.2 — Resilience
 
----
+Planned capabilities include multiple exchanges, exchange failover, and health monitoring.
 
-# Planned Evolution
+# Version 1.3 — Market Context
 
-## Version 1.1
+Planned capabilities include stablecoin metrics, BTC dominance, and market breadth.
 
-- Multiple trading pairs
-- Configurable symbols
-- Improved validation
+# Version 2.0 — Extended Market Data
 
----
-
-## Version 1.2
-
-- Multiple exchanges
-- Exchange failover
-- Health monitoring
-
----
-
-## Version 1.3
-
-- Stablecoin metrics
-- BTC Dominance
-- Market breadth
-
----
-
-## Version 2.0
-
-- Funding Rates
-- Open Interest
-- On-chain metrics
-- Extended market statistics
-
----
+Planned capabilities include funding rates, open interest, on-chain metrics, and extended market statistics.
 
 # Long-Term Vision
 
-Serve as the single trusted data provider for every module within the Crypto Pro Suite.
-
----
+Serve as a trusted standardized data provider for analytical modules within the Crypto Pro Suite while keeping acquisition concerns separate from interpretation.
 
 # Guiding Principle
 
@@ -84,7 +49,8 @@ Serve as the single trusted data provider for every module within the Crypto Pro
 
 | Version | Date | Description |
 |---------|------------|-------------|
-|1.0.0|2026-07-18|First stable release.|
+| 1.0.0 | 2026-07-18 | First stable baseline. |
+| 1.0.0 | 2026-09-15 | Aligned current baseline with the reorganized repository. |
 
 ---
 
