@@ -6,77 +6,56 @@
 **Status:** Stable  
 **Owner:** Rogerio Raposo  
 **Language:** English  
-**Last Updated:** 2026-07-18
+**Last Updated:** 2026-09-15  
+**Documentation Standard:** [DOCUMENTATION_STANDARD.md](DOCUMENTATION_STANDARD.md)
 
 ---
 
 # 1. Purpose
 
-This document defines the official documentation standard for all repositories within the Crypto Pro Suite ecosystem.
+This document defines the official documentation standard for technical repositories within the Crypto Pro Suite ecosystem. Documentation is a core engineering asset and shall evolve together with source code and public interfaces.
 
-Its purpose is to ensure consistency, readability, maintainability, auditability, and long-term sustainability across all technical documentation.
+# 2. Principles
 
-Documentation is considered a core engineering asset and shall evolve together with the source code.
+Technical documentation shall prioritize clarity, consistency, simplicity, accuracy, auditability, maintainability, reproducibility, and traceability. Each document should have one primary responsibility and avoid unnecessary duplication.
 
----
+# 3. Standard Repository Documentation
 
-# 2. Scope
+A repository adopting this standard should organize institutional documentation as follows whenever applicable:
 
-This standard applies to every technical repository belonging to the Crypto Pro Suite, including but not limited to:
-
-- Crypto Pro Data Feed
-- BTC PRO
-- Capital Rotation Pro
-- Institutional Ranking
-- Future analytical modules
-- Shared libraries
-- Infrastructure repositories
-
----
-
-# 3. Document Hierarchy
-
-This document defines the documentation policy for every technical document contained in a repository.
-
-Repositories adopting this standard should ensure that the following documents comply with it:
-
-- README.md
-- SPEC.md
-- ARCHITECTURE.md
-- DEVELOPMENT.md
-- CONTRIBUTING.md
-- ROADMAP.md
-- CHANGELOG.md
-
-Every document governed by this standard should include the following reference immediately after its metadata header:
-
-```markdown
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+```text
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+docs/
+├── DOCUMENTATION_OVERVIEW.md
+├── DOCUMENTATION_STANDARD.md
+├── SPEC.md
+├── ARCHITECTURE.md
+├── DEVELOPMENT.md
+└── ROADMAP.md
 ```
 
-This establishes an explicit relationship between the document and the governing documentation policy.
+`README.md`, `DOCUMENTATION_OVERVIEW.md`, `SPEC.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`, `DOCUMENTATION_STANDARD.md`, `ROADMAP.md`, `CHANGELOG.md`, and `CONTRIBUTING.md` are governed documents. The `LICENSE` file should preserve the canonical license text and is not required to use the Markdown metadata header or footer.
 
----
+# 4. Document Responsibilities
 
-# 4. Documentation Principles
+| Document | Responsibility |
+|----------|----------------|
+| README.md | Project entry point and executive overview. |
+| DOCUMENTATION_OVERVIEW.md | Documentation index, navigation, and reading order. |
+| SPEC.md | Requirements, constraints, interfaces, and acceptance criteria. |
+| ARCHITECTURE.md | Architecture, boundaries, and design decisions. |
+| DEVELOPMENT.md | Engineering, validation, Git, and release practices. |
+| ROADMAP.md | Planned project evolution. |
+| DOCUMENTATION_STANDARD.md | Documentation governance. |
+| CHANGELOG.md | Notable project changes. |
+| CONTRIBUTING.md | Contribution requirements. |
 
-Every technical document shall prioritize:
+# 5. Mandatory Metadata Header
 
-- Clarity
-- Consistency
-- Simplicity
-- Accuracy
-- Auditability
-- Maintainability
-- Reproducibility
-
-Documentation should describe architecture and engineering decisions rather than merely explaining implementation details.
-
----
-
-# 5. Mandatory Document Header
-
-Every technical document shall begin with the following metadata:
+Every governed Markdown document shall include:
 
 ```markdown
 **Project:** ...
@@ -86,325 +65,65 @@ Every technical document shall begin with the following metadata:
 **Owner:** ...
 **Language:** English | Portuguese
 **Last Updated:** YYYY-MM-DD
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+**Documentation Standard:** <relative link to DOCUMENTATION_STANDARD.md>
 ```
 
-## Header Fields
+Root-level documents shall use `[docs/DOCUMENTATION_STANDARD.md](docs/DOCUMENTATION_STANDARD.md)`. Documents inside `docs/` shall use `[DOCUMENTATION_STANDARD.md](DOCUMENTATION_STANDARD.md)`.
 
-| Field | Description |
-|--------|-------------|
-| Project | Repository or project name |
-| Document | Document title |
-| Version | Document version |
-| Status | Current maturity level |
-| Owner | Document owner |
-| Language | Primary document language |
-| Last Updated | ISO 8601 date |
-| Documentation Standard | Governing documentation policy |
+# 6. Mandatory Footer
 
----
+Every governed Markdown document shall end with a `Document History` table followed by `**End of Document**`.
 
-# 6. Mandatory Document Footer
+# 7. Relative Links
 
-Every technical document shall end with:
+Documentation links shall be relative to the file containing the link. Examples:
 
 ```markdown
----
-
-# Document History
-
-| Version | Date | Description |
-|---------|------------|-------------|
-| 1.0.0 | YYYY-MM-DD | First stable release. |
-
----
-
-**End of Document**
+[ARCHITECTURE.md](ARCHITECTURE.md)
+[Documentation Overview](docs/DOCUMENTATION_OVERVIEW.md)
+[CHANGELOG.md](../CHANGELOG.md)
 ```
 
----
+Links shall be updated whenever files are moved or renamed.
 
-# 7. Versioning Policy
+# 8. Versioning and Status
 
-Documents shall follow Semantic Versioning.
+Documents follow Semantic Versioning. Major versions represent breaking structural or conceptual changes, minor versions significant additions, and patch versions editorial or backward-compatible corrections.
 
-## Major
-
-Breaking structural or conceptual changes.
-
-Examples:
-
-- 1.0.0 → 2.0.0
-
----
-
-## Minor
-
-New sections or significant additions.
-
-Examples:
-
-- 1.0.0 → 1.1.0
-
----
-
-## Patch
-
-Editorial improvements.
-
-Examples:
-
-- Typographical corrections
-- Formatting improvements
-- Clarifications
-- Broken links
-
-Examples:
-
-- 1.1.0 → 1.1.1
-
----
-
-# 8. Document Status
-
-The following maturity levels are defined.
-
-## Draft
-
-Initial work in progress.
-
-Major structural changes are expected.
-
----
-
-## Review
-
-Technically complete.
-
-Awaiting editorial and technical approval.
-
----
-
-## Stable
-
-Approved for production use.
-
-Only backward-compatible improvements are expected.
-
----
-
-## Deprecated
-
-Retained exclusively for historical reference.
-
-No further maintenance is expected.
-
----
+Defined statuses are Draft, Review, Stable, and Deprecated. Stable documents must accurately reflect the current implementation and pass technical, editorial, and cross-document consistency review.
 
 # 9. Language Policy
 
-Documentation language depends on its intended audience.
+Technical repository documentation is written in English. Governance documents for the wider Crypto Pro Suite may use Portuguese when appropriate to their audience and role.
 
-## Technical Documentation
+# 10. Markdown Conventions
 
-English
+Use hierarchical Markdown headings, unordered lists when ordering is unnecessary, GitHub Markdown tables, language-labelled code blocks when possible, and simple ASCII diagrams unless graphical diagrams add substantial value.
 
-Examples:
+# 11. Architecture Decisions
 
-- README
-- SPEC
-- ARCHITECTURE
-- DEVELOPMENT
-- ROADMAP
-- CONTRIBUTING
-- CHANGELOG
+Architecture decisions should use stable identifiers such as `AD-001`, `AD-002`, and `AD-003`. Identifiers must never be reused for different decisions.
 
----
+# 12. Change Management
 
-## Governance Documentation
-
-Portuguese
-
-Examples:
-
-- Documento Mestre
-- Constituição
-- Volumes
-- Protocolos internos
-- Diretrizes organizacionais
-
----
-
-# 10. Standard Repository Documents
-
-Repositories should contain the following documents whenever applicable.
-
-## Mandatory
-
-- README.md
-- SPEC.md
-- ARCHITECTURE.md
-- DEVELOPMENT.md
-
----
-
-## Recommended
-
-- CHANGELOG.md
-- CONTRIBUTING.md
-- ROADMAP.md
-- LICENSE
-
----
-
-## Optional
-
-- SECURITY.md
-- CODE_OF_CONDUCT.md
-- API.md
-- FAQ.md
-
----
-
-# 11. Markdown Conventions
-
-## Headings
-
-Use:
-
-```text
-#
-##
-###
-```
-
----
-
-## Lists
-
-Use unordered lists whenever ordering is not required.
-
----
-
-## Tables
-
-Prefer GitHub Markdown tables.
-
----
-
-## Code Blocks
-
-Always specify the language whenever possible.
-
-Examples:
-
-```python
-```
-
-```json
-```
-
-```yaml
-```
-
-```bash
-```
-
----
-
-## Diagrams
-
-Prefer simple ASCII diagrams unless graphical diagrams provide significant additional value.
-
----
-
-# 12. Architecture Decision Records
-
-Architecture decisions should be documented using stable ADR identifiers.
-
-Examples:
-
-- AD-001
-- AD-002
-- AD-003
-
-ADR identifiers must never be reused.
-
----
+Documentation changes shall update `Last Updated`, `Document History` when material, and the project `CHANGELOG.md` when the change represents a notable technical or structural modification. Significant code changes and documentation changes shall remain synchronized.
 
 # 13. Review Process
 
-Before receiving Stable status, every document should pass through:
-
-1. Technical Review
-2. Editorial Review
-3. Cross-document Consistency Review
-
-Stable documents should accurately reflect the current implementation.
-
----
-
-# 14. Change Management
-
-Every modification should include:
-
-- Version update (when applicable)
-- Document History update
-- Git commit describing the change
-
-Significant technical modifications should also be reflected in the project CHANGELOG.
-
----
-
-# 15. Repository Documentation
-
-The repository README should include a section identifying the documentation policy and the principal technical documents maintained by the repository.
-
-Example:
-
-```markdown
-## Repository Documentation
-
-This repository follows the documentation policy defined in:
-
-- DOCUMENTATION_STANDARD.md
-
-Primary technical documents:
-
-- README.md
-- SPEC.md
-- ARCHITECTURE.md
-- DEVELOPMENT.md
-- CONTRIBUTING.md
-- ROADMAP.md
-- CHANGELOG.md
-```
-
----
-
-# 16. Future Evolution
-
-This standard is expected to evolve together with the Crypto Pro Suite.
-
-Whenever possible, improvements should extend the existing standard rather than replace it.
-
-Backward compatibility is preferred.
-
----
+Before a release is declared complete, documentation shall pass technical review, editorial review, cross-document consistency review, link/path validation, and implementation-to-specification validation.
 
 # Guiding Principle
 
 > Well-structured documentation is an architectural asset, not an administrative artifact.
 
-Consistent documentation improves software quality, preserves engineering knowledge, simplifies maintenance, and supports long-term evolution of the Crypto Pro Suite.
-
 ---
 
 # Document History
 
 | Version | Date | Description |
 |---------|------------|-------------|
-| 1.0.0 | 2026-07-18 | First stable release. |
+| 1.0.0 | 2026-07-18 | First stable baseline. |
+| 1.0.0 | 2026-09-15 | Aligned governance with the docs hierarchy and relative-link policy. |
 
 ---
 
