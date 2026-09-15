@@ -32,7 +32,7 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          python datafeed.py
+          python src/datafeed.py
           exit_code=$?
 
           echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
@@ -51,10 +51,10 @@ jobs:
           import json
           from pathlib import Path
 
-          status_path = Path("status.json")
+          status_path = Path("data/status.json")
 
           if not status_path.is_file():
-              raise SystemExit("status.json was not generated.")
+              raise SystemExit("data/status.json was not generated.")
 
           with status_path.open(encoding="utf-8") as file:
               status = json.load(file)
@@ -134,7 +134,7 @@ jobs:
           import json
           from pathlib import Path
 
-          status_path = Path("status.json")
+          status_path = Path("data/status.json")
 
           with status_path.open(encoding="utf-8") as file:
               status = json.load(file)
@@ -161,7 +161,7 @@ jobs:
           import json
           from pathlib import Path
 
-          status_path = Path("status.json")
+          status_path = Path("data/status.json")
 
           with status_path.open(encoding="utf-8") as file:
               status = json.load(file)
@@ -189,10 +189,10 @@ jobs:
           from datetime import datetime
           from pathlib import Path
 
-          snapshot_path = Path("snapshot.json")
+          snapshot_path = Path("data/snapshot.json")
 
           if not snapshot_path.is_file():
-              raise SystemExit("snapshot.json was not generated.")
+              raise SystemExit("data/snapshot.json was not generated.")
 
           with snapshot_path.open(encoding="utf-8") as file:
               snapshot = json.load(file)
@@ -271,9 +271,7 @@ jobs:
               "period_close_time_utc",
           }
 
-          missing_ticker_fields = (
-              required_ticker_fields - ticker.keys()
-          )
+          missing_ticker_fields = required_ticker_fields - ticker.keys()
 
           if missing_ticker_fields:
               raise SystemExit(
@@ -334,9 +332,7 @@ jobs:
               if missing_timeframe_fields:
                   raise SystemExit(
                       f"Timeframe {interval} is missing fields: "
-                      + ", ".join(
-                          sorted(missing_timeframe_fields)
-                      )
+                      + ", ".join(sorted(missing_timeframe_fields))
                   )
 
               if timeframe["interval"] != interval:
@@ -377,18 +373,12 @@ jobs:
                       f"Timeframe {interval} has no closed candles."
                   )
 
-              if (
-                  timeframe["closed_candles"]
-                  != len(closed_candles)
-              ):
+              if timeframe["closed_candles"] != len(closed_candles):
                   raise SystemExit(
                       f"closed_candles mismatch for {interval}."
                   )
 
-              if (
-                  timeframe["latest_closed_candle"]
-                  != closed_candles[-1]
-              ):
+              if timeframe["latest_closed_candle"] != closed_candles[-1]:
                   raise SystemExit(
                       f"latest_closed_candle mismatch for {interval}."
                   )
@@ -436,12 +426,12 @@ jobs:
       - name: Stage successful execution files
         if: steps.collector.outputs.collection_status == 'success'
         run: |
-          git add snapshot.json status.json
+          git add data/snapshot.json data/status.json
 
       - name: Stage failed execution status
         if: steps.collector.outputs.collection_status == 'failure'
         run: |
-          git add status.json
+          git add data/status.json
 
       - name: Commit and push changes
         run: |
@@ -464,6 +454,6 @@ jobs:
         if: steps.collector.outputs.collection_status == 'failure'
         run: |
           echo "The Data Feed collection failed."
-          echo "status.json was published."
-          echo "The latest valid snapshot.json was preserved."
+          echo "data/status.json was published."
+          echo "The latest valid data/snapshot.json was preserved."
           exit 1
