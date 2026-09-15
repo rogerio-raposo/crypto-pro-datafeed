@@ -1,64 +1,39 @@
 # Contributing Guide
 
-**Project:** Crypto Pro Data Feed
-**Document:** Contributing Guide
-**Version:** 1.0.0
-**Status:** Stable
-**Owner:** Rogerio Raposo
-**Language:** English
-**Last Updated:** 2026-07-18
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+**Project:** Crypto Pro Data Feed  
+**Document:** Contributing Guide  
+**Version:** 1.0.0  
+**Status:** Stable  
+**Owner:** Rogerio Raposo  
+**Language:** English  
+**Last Updated:** 2026-09-15  
+**Documentation Standard:** [docs/DOCUMENTATION_STANDARD.md](docs/DOCUMENTATION_STANDARD.md)
 
 ---
 
 # Purpose
 
-This document defines the contribution guidelines for the Crypto Pro Data Feed.
-
----
+This document defines contribution requirements for the Crypto Pro Data Feed.
 
 # Engineering Principles
 
-Contributions shall preserve:
-
-- Simplicity
-- Reliability
-- Deterministic behavior
-- Public contract stability
-
----
+Contributions shall preserve simplicity, reliability, deterministic behavior, public-contract stability, snapshot preservation, and low operational complexity.
 
 # Before Submitting
 
-Verify:
-
-- Tests pass.
-- Documentation updated.
-- Public contract unchanged.
-- CHANGELOG updated when applicable.
-
----
+Validate the affected behavior, confirm `src/` and `data/` paths remain correct, verify that the public JSON contract is preserved or explicitly versioned, update relevant documentation, and update [CHANGELOG.md](CHANGELOG.md) when the change is notable.
 
 # Pull Requests
 
-Each Pull Request should address a single engineering concern.
-
----
+Each pull request should address one coherent engineering concern. The description should explain the purpose, affected behavior, validation performed, and any public-contract or documentation impact.
 
 # Code Style
 
-- Standard Library only.
-- Explicit code.
-- Small functions.
-- Descriptive names.
-
----
+Use the Python Standard Library only for the current baseline, prefer explicit code, keep functions focused, use descriptive names, and fail clearly rather than suppressing errors.
 
 # Documentation
 
-Documentation updates are required whenever behavior changes.
-
----
+Behavioral or structural changes require synchronized documentation. Start with [docs/DOCUMENTATION_OVERVIEW.md](docs/DOCUMENTATION_OVERVIEW.md) to identify the responsible documents.
 
 # Guiding Principle
 
@@ -68,9 +43,10 @@ Documentation updates are required whenever behavior changes.
 
 # Document History
 
-|Version|Date|Description|
-|--------|----|-----------|
-|1.0.0|2026-07-18|First stable release.|
+| Version | Date | Description |
+|---------|------------|-------------|
+| 1.0.0 | 2026-07-18 | First stable baseline. |
+| 1.0.0 | 2026-09-15 | Updated contribution requirements for the reorganized repository. |
 
 ---
 

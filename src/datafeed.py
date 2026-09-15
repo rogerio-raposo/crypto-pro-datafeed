@@ -4,8 +4,8 @@ Crypto Pro Data Feed — Binance Spot
 
 Collects public BTC/USDT market data from Binance Spot and generates:
 
-- snapshot.json: latest successfully validated market snapshot;
-- status.json: result of the latest collection attempt.
+- data/snapshot.json: latest successfully validated market snapshot;
+- data/status.json: result of the latest collection attempt.
 
 No API key or Binance account is required.
 """
@@ -51,9 +51,10 @@ INTERVALS = {
 REQUEST_TIMEOUT_SECONDS = 20
 MAX_RETRIES_PER_HOST = 3
 
-PROJECT_DIRECTORY = Path(__file__).resolve().parent
-SNAPSHOT_PATH = PROJECT_DIRECTORY / "snapshot.json"
-STATUS_PATH = PROJECT_DIRECTORY / "status.json"
+PROJECT_DIRECTORY = Path(__file__).resolve().parent.parent
+DATA_DIRECTORY = PROJECT_DIRECTORY / "data"
+SNAPSHOT_PATH = DATA_DIRECTORY / "snapshot.json"
+STATUS_PATH = DATA_DIRECTORY / "status.json"
 
 
 class DataFeedError(RuntimeError):
@@ -82,6 +83,7 @@ def write_json_atomically(path: Path, data: dict[str, Any]) -> None:
     The final file is replaced only after the complete JSON document
     has been written successfully.
     """
+    path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = path.with_suffix(f"{path.suffix}.tmp")
 
     temporary_path.write_text(
@@ -244,18 +246,14 @@ def parse_candle(
 
     return {
         "open_time_ms": open_time_ms,
-        "open_time_utc": utc_datetime_from_milliseconds(
-            open_time_ms
-        ),
+        "open_time_utc": utc_datetime_from_milliseconds(open_time_ms),
         "open": float(raw_candle[1]),
         "high": float(raw_candle[2]),
         "low": float(raw_candle[3]),
         "close": float(raw_candle[4]),
         "base_volume": float(raw_candle[5]),
         "close_time_ms": close_time_ms,
-        "close_time_utc": utc_datetime_from_milliseconds(
-            close_time_ms
-        ),
+        "close_time_utc": utc_datetime_from_milliseconds(close_time_ms),
         "quote_volume": float(raw_candle[7]),
         "number_of_trades": int(raw_candle[8]),
         "taker_buy_base_volume": float(raw_candle[9]),
@@ -310,12 +308,8 @@ def collect_timeframe(
             "requested_limit": requested_limit,
             "received_candles": len(candles),
             "closed_candles": len(closed_candles),
-            "first_open_time_utc": candles[0][
-                "open_time_utc"
-            ],
-            "last_open_time_utc": candles[-1][
-                "open_time_utc"
-            ],
+            "first_open_time_utc": candles[0]["open_time_utc"],
+            "last_open_time_utc": candles[-1]["open_time_utc"],
             "latest_closed_candle": closed_candles[-1],
             "candles": candles,
         },
@@ -405,9 +399,7 @@ def validate_snapshot(snapshot: dict[str, Any]) -> None:
         raise DataFeedError("Ticker quality control failed.")
 
     if (
-        quality_control[
-            "all_required_timeframes_available"
-        ]
+        quality_control["all_required_timeframes_available"]
         is not True
     ):
         raise DataFeedError(
@@ -425,9 +417,7 @@ def build_success_status(
         "module": MODULE_NAME,
         "status": "success",
         "last_attempt_at_utc": attempt_at_utc.isoformat(),
-        "last_attempt_at_america_recife": (
-            attempt_at_recife.isoformat()
-        ),
+        "last_attempt_at_america_recife": attempt_at_recife.isoformat(),
         "snapshot_updated": True,
         "exchange": PRIMARY_EXCHANGE,
         "symbol": SYMBOL,
@@ -446,9 +436,7 @@ def build_failure_status(
         "module": MODULE_NAME,
         "status": "failure",
         "last_attempt_at_utc": attempt_at_utc.isoformat(),
-        "last_attempt_at_america_recife": (
-            attempt_at_recife.isoformat()
-        ),
+        "last_attempt_at_america_recife": attempt_at_recife.isoformat(),
         "snapshot_updated": False,
         "exchange": PRIMARY_EXCHANGE,
         "symbol": SYMBOL,
@@ -461,7 +449,6 @@ def create_snapshot(
     captured_at_recife: datetime,
 ) -> dict[str, Any]:
     """Acquire all required data and build the market snapshot."""
-   
     captured_at_ms = int(captured_at_utc.timestamp() * 1000)
 
     print("Starting Crypto Pro Data Feed.", flush=True)
@@ -474,9 +461,7 @@ def create_snapshot(
     )
 
     timeframe_data: dict[str, Any] = {}
-    hosts_used: dict[str, str] = {
-        "ticker_24h": ticker_host,
-    }
+    hosts_used: dict[str, str] = {"ticker_24h": ticker_host}
 
     for interval, requested_limit in INTERVALS.items():
         collected_data, host = collect_timeframe(
@@ -506,9 +491,7 @@ def create_snapshot(
         "base_asset": BASE_ASSET,
         "quote_asset": QUOTE_ASSET,
         "captured_at_utc": captured_at_utc.isoformat(),
-        "captured_at_america_recife": (
-            captured_at_recife.isoformat()
-        ),
+        "captured_at_america_recife": captured_at_recife.isoformat(),
         "data_origin": "Binance Public REST API",
         "authentication_required": False,
         "hosts_used": hosts_used,
@@ -563,8 +546,7 @@ def main() -> int:
         print(f"Snapshot written to: {SNAPSHOT_PATH}", flush=True)
         print(f"Status written to: {STATUS_PATH}", flush=True)
         print(
-            f"Last price: "
-            f"{snapshot['ticker_24h']['last_price']}",
+            f"Last price: {snapshot['ticker_24h']['last_price']}",
             flush=True,
         )
 
