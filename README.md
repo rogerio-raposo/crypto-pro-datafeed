@@ -6,227 +6,100 @@
 **Status:** Stable  
 **Owner:** Rogerio Raposo  
 **Language:** English  
-**Last Updated:** 2026-07-18  
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+**Last Updated:** 2026-09-15  
+**Documentation Standard:** [docs/DOCUMENTATION_STANDARD.md](docs/DOCUMENTATION_STANDARD.md)
 
 ---
 
 # Overview
 
-Crypto Pro Data Feed is the official market data acquisition module of the Crypto Pro Suite.
+Crypto Pro Data Feed is the official market data acquisition module of the Crypto Pro Suite. It collects, validates, normalizes, and publishes cryptocurrency market data through a stable public JSON contract.
 
-Its mission is to collect, validate, normalize, and publish cryptocurrency market data through a stable public JSON contract.
-
-Rather than exposing live exchange requests to analytical modules, the Data Feed publishes deterministic snapshots that serve as the single source of truth for the entire ecosystem.
-
----
-
-# Objectives
-
-- Acquire reliable market data
-- Validate exchange responses
-- Normalize market information
-- Publish deterministic JSON snapshots
-- Preserve the latest valid snapshot during failures
-- Provide a stable public contract for consumer modules
-
----
+Rather than exposing live exchange requests to analytical modules, the Data Feed publishes deterministic artifacts that act as the trusted market-data interface for downstream consumers.
 
 # Key Features
 
-- Binance Spot integration
-- Automatic retry mechanism
-- Semantic validation
-- Atomic file publication
-- Snapshot preservation
-- Execution status reporting
-- Standard library only
-- GitHub Actions automation
-- Public JSON contract
-- Consumer-independent architecture
-
----
+- Binance Spot integration for BTCUSDT.
+- Automatic retry across approved Binance public hosts.
+- Semantic validation and atomic JSON publication.
+- Preservation of the latest valid snapshot after failures.
+- Execution status reporting.
+- Python Standard Library only.
+- GitHub Actions execution and publication workflow.
 
 # Architecture Overview
 
 ```text
-            Binance Spot API
+Binance Spot API
+       │
+       ▼
+src/datafeed.py
+       │
+       ├──► data/snapshot.json
+       └──► data/status.json
                     │
                     ▼
-             datafeed.py
-                    │
-      ┌─────────────┴─────────────┐
-      ▼                           ▼
- snapshot.json               status.json
-      │                           │
-      └─────────────┬─────────────┘
-                    ▼
-           GitHub Repository
-                    │
-                    ▼
-       Published Data Contract
+          Public Data Contract
                     │
                     ▼
         Crypto Pro Suite Modules
 ```
 
-For architectural details, see `ARCHITECTURE.md`.
-
----
+For architectural details, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 # Repository Structure
 
 ```text
-.
+crypto-pro-datafeed/
 ├── .github/
 │   └── workflows/
-├── datafeed.py
-├── snapshot.json
-├── status.json
-├── README.md
-├── SPEC.md
-├── ARCHITECTURE.md
-├── DEVELOPMENT.md
-├── DOCUMENTATION_STANDARD.md
+│       └── update-datafeed.yml
+├── src/
+│   └── datafeed.py
+├── data/
+│   ├── snapshot.json
+│   └── status.json
+├── docs/
+│   ├── DOCUMENTATION_OVERVIEW.md
+│   ├── DOCUMENTATION_STANDARD.md
+│   ├── SPEC.md
+│   ├── ARCHITECTURE.md
+│   ├── DEVELOPMENT.md
+│   └── ROADMAP.md
+├── .gitignore
 ├── CHANGELOG.md
-├── ROADMAP.md
 ├── CONTRIBUTING.md
-└── LICENSE
+├── LICENSE
+└── README.md
 ```
-
----
 
 # Published Data Contract
 
-The repository publishes two official JSON artifacts.
+The official public artifacts are `data/snapshot.json` and `data/status.json`. A successful execution may replace both artifacts. A failed execution must preserve the latest valid snapshot while updating `data/status.json` with the failure result.
 
-## snapshot.json
-
-Contains the latest validated market snapshot.
-
-This file is only replaced after a successful execution.
-
----
-
-## status.json
-
-Contains execution metadata.
-
-Consumer modules must validate this file before consuming `snapshot.json`.
-
-Typical fields include:
-
-- status
-- timestamp
-- exchange
-- symbol
-- snapshot_updated
-- error (when applicable)
-
----
+Consumer modules should validate `data/status.json` before using `data/snapshot.json`.
 
 # Workflow
 
-Each execution follows the same deterministic pipeline.
-
-```text
-Acquire Data
-      │
-      ▼
-Validate
-      │
-      ▼
-Normalize
-      │
-      ▼
-Create Snapshot
-      │
-      ▼
-Create Status
-      │
-      ▼
-Publish
-```
-
----
+`.github/workflows/update-datafeed.yml` executes `src/datafeed.py`, validates the generated artifacts, stages the appropriate files, and publishes repository updates when changes exist. Version 1.0.0 retains manual execution through `workflow_dispatch`; periodic scheduling is outside the current release scope.
 
 # Documentation
 
-This repository follows the documentation policy defined in:
+Start with [docs/DOCUMENTATION_OVERVIEW.md](docs/DOCUMENTATION_OVERVIEW.md), which provides the documentation map and recommended reading order.
 
-- DOCUMENTATION_STANDARD.md
-
-Primary technical documents:
-
-- README.md
-- SPEC.md
-- ARCHITECTURE.md
-- DEVELOPMENT.md
-- CHANGELOG.md
-- ROADMAP.md
-- CONTRIBUTING.md
-
-Each document covers a specific aspect of the project.
-
----
+The repository documentation is governed by [docs/DOCUMENTATION_STANDARD.md](docs/DOCUMENTATION_STANDARD.md).
 
 # Project Status
 
-Current Version:
+Version **1.0.0** is the initial stable baseline. Current scope is one exchange, one trading pair, a versioned public JSON contract, failure-safe snapshot publication, and GitHub Actions execution.
 
-**1.0.0**
+# Contributing and License
 
-Status:
-
-**Production Ready**
-
-Current capabilities:
-
-- Single exchange
-- Single trading pair
-- Immutable snapshots
-- Public JSON contract
-- Automated publication
-
----
-
-# Roadmap
-
-Planned future improvements include:
-
-- Multiple trading pairs
-- Multiple exchanges
-- Stablecoin metrics
-- BTC Dominance
-- Funding Rates
-- Open Interest
-- On-chain indicators
-
-See `ROADMAP.md` for details.
-
----
-
-# Contributing
-
-Contributions are welcome.
-
-Please read `CONTRIBUTING.md` before submitting pull requests.
-
----
-
-# License
-
-This project is distributed under the MIT License.
-
-See `LICENSE` for details.
-
----
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [LICENSE](LICENSE) for the MIT License.
 
 # Guiding Principle
 
-> Reliable analytics begin with reliable data.
-
-The Crypto Pro Data Feed is intentionally designed to provide a deterministic, auditable, and stable market data layer for every analytical module within the Crypto Pro Suite.
+> Publish trustworthy market data through simple, deterministic and maintainable engineering.
 
 ---
 
@@ -234,7 +107,8 @@ The Crypto Pro Data Feed is intentionally designed to provide a deterministic, a
 
 | Version | Date | Description |
 |---------|------------|-------------|
-| 1.0.0 | 2026-07-18 | First stable release. |
+| 1.0.0 | 2026-07-18 | First stable baseline. |
+| 1.0.0 | 2026-09-15 | Aligned documentation with the reorganized repository structure. |
 
 ---
 
