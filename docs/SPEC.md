@@ -1,225 +1,80 @@
 # Crypto Pro Data Feed Specification
 
-**Project:** Crypto Pro Data Feed
-**Document:** Specification
-**Version:** 1.0.0
-**Status:** Stable
-**Owner:** Rogerio Raposo
-**Language:** English
-**Last Updated:** 2026-07-18
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+**Project:** Crypto Pro Data Feed  
+**Document:** Specification  
+**Version:** 1.0.0  
+**Status:** Stable  
+**Owner:** Rogerio Raposo  
+**Language:** English  
+**Last Updated:** 2026-09-15  
+**Documentation Standard:** [DOCUMENTATION_STANDARD.md](DOCUMENTATION_STANDARD.md)
 
 ---
 
 # 1. Purpose
 
-This document specifies the functional requirements and operational behavior of the Crypto Pro Data Feed.
-
-It defines what the system shall do, independently of how it is implemented.
-
----
+This document specifies the functional requirements and operational behavior of the Crypto Pro Data Feed. It defines what the system shall do independently of implementation details.
 
 # 2. Scope
 
-The Crypto Pro Data Feed is responsible for acquiring, validating, normalizing, and publishing cryptocurrency market data for the Crypto Pro Suite.
-
-This specification applies exclusively to the Data Feed module.
-
----
+The Data Feed acquires, validates, normalizes, and publishes cryptocurrency market data for the Crypto Pro Suite. Version 1.0.0 covers Binance Spot and BTCUSDT.
 
 # 3. Definitions
 
 | Term | Definition |
-|-------|------------|
-| Snapshot | Immutable JSON file containing validated market data. |
-| Status | JSON file describing the outcome of the latest execution. |
+|------|------------|
+| Snapshot | `data/snapshot.json`, containing the latest successfully validated market snapshot. |
+| Status | `data/status.json`, describing the outcome of the latest execution. |
 | Producer | Component responsible for publishing market data. |
-| Consumer | Module that reads published JSON artifacts. |
-| Public Data Contract | Official interface between producer and consumers. |
+| Consumer | Module that reads the published artifacts. |
+| Public Data Contract | Official interface formed by the published JSON artifacts and their schema. |
 
----
+# 4. Functional Requirements
 
-# 4. System Responsibilities
+The Data Feed shall connect to the configured exchange, retry failed requests across approved hosts, validate responses, reject invalid data, normalize collected information, generate the snapshot and status artifacts, preserve the latest valid snapshot after failure, and expose deterministic structured outputs.
 
-The system shall:
+The implementation entry point for version 1.0.0 is `src/datafeed.py`.
 
-- Acquire market data.
-- Validate responses.
-- Normalize information.
-- Publish deterministic artifacts.
-- Preserve the latest valid snapshot.
-- Report execution status.
+# 5. Non-Functional Requirements
 
----
+The system shall prioritize reliability, simplicity, auditability, reproducibility, extensibility, deterministic behavior, and low operational complexity. It shall require no third-party Python packages.
 
-# 5. Functional Requirements
+# 6. Constraints
 
-The Data Feed shall:
+The Data Feed shall not perform technical analysis, generate trading signals, publish invalid market data, or interpret market meaning. Version 1.0.0 uses Binance Spot as the primary exchange and BTCUSDT as the configured trading pair.
 
-FR-001 — Connect to the configured exchange.
+# 7. Outputs and Public Data Contract
 
-FR-002 — Retry failed requests.
+The official public artifacts are:
 
-FR-003 — Validate every response.
+- `data/snapshot.json`
+- `data/status.json`
 
-FR-004 — Reject invalid data.
+Internal implementation changes shall not break the public contract without an explicit schema revision. Consumer modules shall validate status before processing snapshot data.
 
-FR-005 — Normalize collected information.
+# 8. Execution Flow
 
-FR-006 — Generate snapshot.json.
+Each execution shall acquire data, validate external responses, normalize the data, build and validate the snapshot, build the execution status, and publish the appropriate artifacts atomically.
 
-FR-007 — Generate status.json.
+# 9. Failure Handling
 
-FR-008 — Publish both artifacts.
+Upon failure, `data/snapshot.json` shall remain unchanged, `data/status.json` shall be updated, the failure reason shall be recorded, and the process shall return a failure result.
 
-FR-009 — Preserve the last valid snapshot after failures.
+# 10. Acceptance Criteria
 
-FR-010 — Produce deterministic outputs.
+The implementation is compliant when successful execution publishes valid snapshot and status artifacts; failed execution preserves the prior valid snapshot and updates status; published data passes semantic validation; and consumers can determine the latest execution outcome through `data/status.json`.
 
----
+# 11. Compatibility
 
-# 6. Non-Functional Requirements
+Backward compatibility should be preserved whenever possible. Breaking changes require a major version increment, documentation updates, and a documented public-contract revision.
 
-The Data Feed shall provide:
+# 12. Out of Scope
 
-- Reliability
-- Simplicity
-- Auditability
-- Reproducibility
-- Extensibility
-- Deterministic execution
+Technical analysis, portfolio management, institutional ranking, investment recommendations, and market interpretation are outside this module.
 
----
-
-# 7. Constraints
-
-The Data Feed shall not:
-
-- Perform technical analysis.
-- Generate trading signals.
-- Modify historical snapshots.
-- Publish invalid market data.
-- Require third-party Python packages.
-
----
-
-# 8. Inputs
-
-Current implementation:
-
-Exchange:
-
-- Binance Spot
-
-Trading Pair:
-
-- BTCUSDT
-
-Future versions may support additional exchanges without changing the public contract.
-
----
-
-# 9. Outputs
-
-The module publishes:
-
-- snapshot.json
-- status.json
-
-Both artifacts compose the official public interface.
-
----
-
-# 10. Public Data Contract
-
-Consumer modules shall interact exclusively through:
-
-- snapshot.json
-- status.json
-
-Internal implementation changes shall not modify the published contract without a documented schema revision.
-
----
-
-# 11. Execution Flow
-
-Each execution shall perform:
-
-1. Acquire data.
-2. Validate.
-3. Normalize.
-4. Build snapshot.
-5. Build status.
-6. Publish.
-
----
-
-# 12. Failure Handling
-
-Upon failure:
-
-- snapshot.json shall remain unchanged.
-- status.json shall always be updated.
-- Failure reason shall be recorded.
-- Consumer modules shall detect execution status before processing market data.
-
----
-
-# 13. Acceptance Criteria
-
-The implementation shall be considered compliant when:
-
-AC-001
-
-Successful execution publishes both JSON artifacts.
-
-AC-002
-
-Failed execution preserves snapshot.json.
-
-AC-003
-
-Failed execution updates status.json.
-
-AC-004
-
-Published data passes semantic validation.
-
-AC-005
-
-Consumer modules can determine execution status exclusively through status.json.
-
----
-
-# 14. Compatibility
-
-Backward compatibility should be preserved whenever possible.
-
-Breaking changes require:
-
-- Major version increment.
-- Documentation update.
-- Public contract revision.
-
----
-
-# 15. Out of Scope
-
-This module does not perform:
-
-- Technical analysis
-- Portfolio management
-- Institutional ranking
-- Investment recommendations
-- Market interpretation
-
----
-
-# 16. Guiding Principle
+# Guiding Principle
 
 > The Data Feed defines what happened, never what it means.
-
-Its responsibility ends at publishing trustworthy market data.
 
 ---
 
@@ -227,7 +82,8 @@ Its responsibility ends at publishing trustworthy market data.
 
 | Version | Date | Description |
 |---------|------------|-------------|
-| 1.0.0 | 2026-07-18 | First stable release. |
+| 1.0.0 | 2026-07-18 | First stable baseline. |
+| 1.0.0 | 2026-09-15 | Aligned specification with the reorganized repository and public artifact paths. |
 
 ---
 
