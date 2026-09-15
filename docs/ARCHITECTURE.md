@@ -6,234 +6,92 @@
 **Status:** Stable  
 **Owner:** Rogerio Raposo  
 **Language:** English  
-**Last Updated:** 2026-07-18  
-**Documentation Standard:** DOCUMENTATION_STANDARD.md
+**Last Updated:** 2026-09-15  
+**Documentation Standard:** [DOCUMENTATION_STANDARD.md](DOCUMENTATION_STANDARD.md)
 
 ---
 
 # 1. Purpose
 
-The Crypto Pro Data Feed is responsible for acquiring, validating, standardizing, and publishing cryptocurrency market data for the Crypto Pro Suite.
-
-It is the only component authorized to communicate directly with external market data providers.
-
-All downstream modules consume standardized market data exclusively through the published JSON contract, ensuring loose coupling between data acquisition and analytical components.
-
----
+The Crypto Pro Data Feed acquires, validates, standardizes, and publishes cryptocurrency market data for the Crypto Pro Suite. Downstream modules consume the published JSON contract rather than communicating directly with exchanges.
 
 # 2. Design Philosophy
 
-The architecture is guided by the following engineering principles:
-
-- Single Responsibility
-- Reliability over Completeness
-- Deterministic Outputs
-- Simplicity First
-- Loose Coupling
-- Public Data Contract
-- Auditability
-- Reproducibility
-- Extensibility
-
-The primary objective is to provide a stable and trustworthy data foundation for every module within the Crypto Pro Suite.
-
----
+The architecture prioritizes single responsibility, reliability over completeness, deterministic outputs, simplicity, loose coupling, auditability, reproducibility, and public-contract stability.
 
 # 3. High-Level Architecture
 
 ```text
-            Binance Spot API
+Binance Spot API
+       │
+       ▼
+src/datafeed.py
+       │
+       ├──► data/snapshot.json
+       └──► data/status.json
                     │
                     ▼
-             datafeed.py
-                    │
-      ┌─────────────┴─────────────┐
-      ▼                           ▼
- snapshot.json               status.json
-      │                           │
-      └─────────────┬─────────────┘
-                    ▼
-           GitHub Repository
-                    │
-                    ▼
-       Published Data Contract
+          Public Data Contract
                     │
                     ▼
         Crypto Pro Suite Modules
 ```
 
-The Data Feed acts exclusively as a producer.
+`.github/workflows/update-datafeed.yml` orchestrates repository execution, validates generated artifacts, and publishes changes. Version 1.0.0 exposes manual workflow execution through `workflow_dispatch`.
 
-Consumer modules never communicate directly with external exchanges.
+# 4. Repository Boundaries
 
-Instead, they rely solely on the published data contract.
+```text
+.github/workflows/update-datafeed.yml  Workflow orchestration and publication
+src/datafeed.py                        Acquisition, normalization, validation
+ data/snapshot.json                    Latest validated market snapshot
+ data/status.json                      Latest execution status
+docs/                                  Engineering documentation
+```
 
----
+The repository does not perform technical analysis, trading signals, market interpretation, institutional ranking, portfolio management, or investment recommendations.
 
-# 4. Architecture Decision Records (ADR)
+# 5. Architecture Decisions
 
 ## AD-001 — Single Data Source
 
-The initial implementation uses Binance Spot as the sole market data provider.
+Version 1.0.0 uses Binance Spot as the sole market data provider to minimize operational complexity.
 
-This minimizes operational complexity while establishing a robust acquisition layer.
+## AD-002 — Snapshot Publication
 
-Future releases may introduce additional exchanges without changing the public interface consumed by downstream modules.
-
----
-
-## AD-002 — Immutable Snapshot Publication
-
-Instead of exposing live requests, the Data Feed periodically publishes immutable market snapshots.
-
-This approach guarantees deterministic analyses, reproducibility, and simplified auditing.
-
----
+The Data Feed publishes a latest validated snapshot instead of exposing live exchange requests to consumers. A failed execution must not replace the latest valid snapshot.
 
 ## AD-003 — Public JSON Contract
 
-Market data is distributed through versioned JSON files.
-
-These files constitute the official public contract between the Data Feed and every consumer module.
-
-Internal implementation details must never alter this contract without an explicit schema revision.
-
----
+`data/snapshot.json` and `data/status.json` form the versioned public interface. Internal implementation changes must not break this contract without an explicit schema revision.
 
 ## AD-004 — Producer–Consumer Separation
 
-Data acquisition and market analysis are intentionally separated.
+The Data Feed produces standardized market data; analytical interpretation belongs to downstream modules.
 
-The Data Feed is responsible only for collecting, validating, normalizing, and publishing market information.
+## AD-005 — Status-Based Execution Validation
 
-Analytical interpretation belongs exclusively to downstream modules.
+Every execution updates `data/status.json`. Consumers should validate execution status before using `data/snapshot.json`.
 
----
+## AD-006 — Source, Data, and Documentation Separation
 
-## AD-005 — Snapshot Preservation
-
-A successfully published snapshot is considered immutable.
-
-Failed executions must never overwrite the latest valid snapshot.
-
-This guarantees continuous availability of trusted market data even during temporary operational failures.
-
----
-
-## AD-006 — Status-Based Execution Validation
-
-Every execution produces a `status.json` file.
-
-Consumer modules must validate the execution status before reading `snapshot.json`.
-
-This architectural decision replaced the previous `failure.json` proposal and significantly improved publication reliability.
-
----
-
-# 5. Data Flow
-
-Every execution follows the same deterministic workflow.
-
-1. Acquire market data.
-2. Validate external responses.
-3. Normalize market information.
-4. Build the market snapshot.
-5. Build the execution status.
-6. Publish artifacts.
-7. Make the published contract available to consumer modules.
-
-Every execution produces predictable and reproducible outputs.
-
----
+Executable source code is isolated under `src/`, published artifacts under `data/`, and engineering documentation under `docs/`. This separation makes repository responsibilities explicit without introducing unnecessary directories.
 
 # 6. Failure Strategy
 
-The Data Feed follows four mandatory rules.
-
-- A failed execution never overwrites `snapshot.json`.
-- Every execution updates `status.json`.
-- Failure reasons are always explicitly recorded.
-- Consumer modules must validate `status.json` before consuming `snapshot.json`.
-
-This strategy guarantees operational resilience while preserving the integrity of the published data.
-
----
+On failure, the latest valid snapshot is preserved, status is updated with the failure reason, and the workflow can publish the failure status without corrupting the public snapshot.
 
 # 7. Extensibility
 
-The architecture was intentionally designed for incremental evolution.
+Future capabilities may include multiple trading pairs, multiple exchanges, exchange failover, stablecoin metrics, BTC dominance, market breadth, funding rates, open interest, and on-chain metrics. Extensions should preserve the established public interface whenever possible.
 
-Planned future extensions include:
+# 8. Architecture Stability
 
-- Multiple trading pairs
-- Multiple exchanges
-- Stablecoin market metrics
-- BTC Dominance
-- Market breadth indicators
-- Funding Rates
-- Open Interest
-- On-chain metrics
+New capabilities should extend established components rather than replace stable interfaces. Contract stability and deterministic behavior take precedence over feature quantity.
 
-These capabilities should extend the architecture without breaking the existing public contract.
-
----
-
-# 8. Repository Boundaries
-
-This repository is intentionally limited to market data acquisition.
-
-It does not perform:
-
-- Technical analysis
-- Trading signals
-- Market interpretation
-- Institutional rankings
-- Portfolio management
-- Investment recommendations
-
-Those responsibilities belong to higher-level modules within the Crypto Pro Suite.
-
----
-
-# 9. Relationship with the Crypto Pro Suite
-
-```text
-Crypto Pro Data Feed
-          │
-          ▼
-        BTC PRO
-          │
-          ▼
-Capital Rotation Pro
-          │
-          ▼
-Institutional Ranking
-          │
-          ▼
-Reports & Decision Support
-```
-
-The Data Feed provides the standardized market layer upon which every analytical component of the Crypto Pro Suite is built.
-
----
-
-# 10. Architecture Stability
-
-This architecture is intended to remain stable across future releases.
-
-Whenever possible, new capabilities should be introduced by extending existing components rather than modifying the established public data contract.
-
-Maintaining contract stability is considered a fundamental architectural principle of the Crypto Pro Suite.
-
----
-
-# 11. Guiding Principle
+# Guiding Principle
 
 > A stable architecture enables stable analytics.
-
-The quality of every analytical module depends directly on the reliability, consistency, and predictability of the Data Feed.
-
-For this reason, architectural simplicity and deterministic behavior always take precedence over feature quantity.
 
 ---
 
@@ -241,7 +99,8 @@ For this reason, architectural simplicity and deterministic behavior always take
 
 | Version | Date | Description |
 |---------|------------|-------------|
-| 1.0.0 | 2026-07-18 | First stable release. |
+| 1.0.0 | 2026-07-18 | First stable baseline. |
+| 1.0.0 | 2026-09-15 | Aligned architecture and repository boundaries with the reorganized structure. |
 
 ---
 
