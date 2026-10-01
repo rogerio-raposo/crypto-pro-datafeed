@@ -1,0 +1,86 @@
+name: PCP-01 Capacity Two-Cycle Dry Run
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/pcp01-capacity-dry-run.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pcp01-capacity-dry-run
+  cancel-in-progress: false
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check whether two-cycle dry-run already passed
+        id: readiness
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("data/experimental/pcp-01/dry-run/capacity-status.json")
+          passed = False
+          if p.exists():
+              try:
+                  passed = json.loads(p.read_text()).get("two_cycle_status") == "PASS"
+              except Exception:
+                  passed = False
+          with open("$GITHUB_OUTPUT", "a") as fh:
+              fh.write(f"skip={'true' if passed else 'false'}\n")
+          print("already_qualified=", passed)
+          PY
+
+      - name: Compile collector
+        if: steps.readiness.outputs.skip != 'true'
+        run: |
+          python -m py_compile src/experimental/pcp01/binance_qps_probe.py
+          python -m py_compile src/experimental/pcp01/pcp01_capacity_dry_run.py
+
+      - name: Run Capacity dry-run cycle
+        if: steps.readiness.outputs.skip != 'true'
+        run: |
+          mkdir -p data/experimental/pcp-01/dry-run
+          python src/experimental/pcp01/pcp01_capacity_dry_run.py \
+            --cycle-id "gh-${{ github.run_id }}-${{ github.run_attempt }}" \
+            --output "data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}.json" \
+            --status-file "data/experimental/pcp-01/dry-run/capacity-status.json"
+
+      - name: Upload full dry-run cycle artifact
+        if: steps.readiness.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pcp01-capacity-cycle-${{ github.run_id }}
+          path: data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}.json
+          if-no-files-found: error
+
+      - name: Persist lightweight dry-run status
+        if: steps.readiness.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/experimental/pcp-01/dry-run/capacity-status.json
+          if git diff --cached --quiet; then
+            echo "No dry-run status change to commit."
+          else
+            git commit -m "data: update PCP-01 Capacity dry-run status"
+            git pull --rebase origin main
+            git push
+          fi
