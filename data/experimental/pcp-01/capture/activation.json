@@ -1,0 +1,84 @@
+{
+  "schema_version": "pcp01-capacity-activation-0.1",
+  "active": false,
+  "run_id": null,
+  "uft_utc": null,
+  "capture_start_utc": null,
+  "t0_utc": null,
+  "horizon_end_utc": null,
+  "qevs": [
+    {
+      "canonical_asset_id": "CPS-PLUME",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "PLUMEUSDT",
+      "base_asset": "PLUME",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-OP",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "OPUSDT",
+      "base_asset": "OP",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-APT",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "APTUSDT",
+      "base_asset": "APT",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-SUI",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "SUIUSDT",
+      "base_asset": "SUI",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-LINK",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "LINKUSDT",
+      "base_asset": "LINK",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-RSR",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "RSRUSDT",
+      "base_asset": "RSR",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-INJ",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "INJUSDT",
+      "base_asset": "INJ",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-HYPE",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "HYPEUSDT",
+      "base_asset": "HYPE",
+      "quote_asset": "USDT"
+    },
+    {
+      "canonical_asset_id": "CPS-SYRUP",
+      "venue": "Binance",
+      "market_type": "spot",
+      "symbol": "SYRUPUSDT",
+      "base_asset": "SYRUP",
+      "quote_asset": "USDT"
+    }
+  ],
+  "activation_note": "Inactive placeholder. Activate only after two-cycle dry-run PASS and formal PCP-01 UFT declaration."
+}

@@ -1,0 +1,62 @@
+name: PCP-01 Official Capacity Capture
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/pcp01-capacity-capture.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pcp01-capacity-official-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile official capture producers
+        run: |
+          python -m py_compile src/experimental/pcp01/binance_qps_probe.py
+          python -m py_compile src/experimental/pcp01/pcp01_capacity_capture.py
+          python -m py_compile src/experimental/pcp01/pcp01_turnover_at_t0.py
+
+      - name: Run official hourly capture if activated
+        run: |
+          python src/experimental/pcp01/pcp01_capacity_capture.py \
+            --activation data/experimental/pcp-01/capture/activation.json \
+            --output-root data/experimental/pcp-01/capture
+
+      - name: Capture exact seven-day turnover after T0
+        run: |
+          python src/experimental/pcp01/pcp01_turnover_at_t0.py \
+            --activation data/experimental/pcp-01/capture/activation.json \
+            --output-root data/experimental/pcp-01/capture
+
+      - name: Persist official experimental capture evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/experimental/pcp-01/capture
+          if git diff --cached --quiet; then
+            echo "No official capture change to commit."
+          else
+            git commit -m "data: update PCP-01 official Capacity capture"
+            git pull --rebase origin main
+            git push
+          fi
