@@ -1,0 +1,38 @@
+name: PCP-01 Binance Supported Market Universe
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/pcp01-binance-universe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  universe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile universe builder
+        run: python -m py_compile src/experimental/pcp01/binance_universe_snapshot.py
+
+      - name: Build provisional supported market universe
+        run: python src/experimental/pcp01/binance_universe_snapshot.py
+
+      - name: Upload universe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pcp01-binance-supported-market-universe
+          path: data/experimental/pcp-01/universe/binance-supported-market-universe.json
+          if-no-files-found: error
