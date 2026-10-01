@@ -131,7 +131,135 @@
           "turnover_days": 7
         }
       ]
+    },
+    {
+      "cycle_id": "gh-36867150461-1",
+      "hour_slot_utc": "2026-10-01T13:00:00+00:00",
+      "started_at_utc": "2026-10-01T13:13:49.634071+00:00",
+      "completed_at_utc": "2026-10-01T13:14:11.371521+00:00",
+      "technical_cycle_status": "PASS",
+      "success_count": 9,
+      "planned_count": 9,
+      "assets": [
+        {
+          "canonical_asset_id": "CPS-PLUME",
+          "symbol": "PLUMEUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:13:52.695709+00:00",
+          "bid_levels_received": 409,
+          "ask_levels_received": 999,
+          "bid_notional_visible": 392138.93218,
+          "ask_notional_visible": 1009163.51581,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-OP",
+          "symbol": "OPUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:13:54.792210+00:00",
+          "bid_levels_received": 529,
+          "ask_levels_received": 1000,
+          "bid_notional_visible": 1017640.953107,
+          "ask_notional_visible": 1953600.999626,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-APT",
+          "symbol": "APTUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:13:57.167108+00:00",
+          "bid_levels_received": 782,
+          "ask_levels_received": 1000,
+          "bid_notional_visible": 981000.796785,
+          "ask_notional_visible": 1966722.9199,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-SUI",
+          "symbol": "SUIUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:13:59.173820+00:00",
+          "bid_levels_received": 1000,
+          "ask_levels_received": 1000,
+          "bid_notional_visible": 2435933.03595,
+          "ask_notional_visible": 2217023.75982,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-LINK",
+          "symbol": "LINKUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:14:03.471244+00:00",
+          "bid_levels_received": 1000,
+          "ask_levels_received": 1000,
+          "bid_notional_visible": 2038017.69765,
+          "ask_notional_visible": 2425094.65857,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-RSR",
+          "symbol": "RSRUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:14:05.353166+00:00",
+          "bid_levels_received": 199,
+          "ask_levels_received": 1000,
+          "bid_notional_visible": 121928.0370861,
+          "ask_notional_visible": 499549.4929503,
+          "sell_child_notional_covered": false,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-INJ",
+          "symbol": "INJUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:14:07.389980+00:00",
+          "bid_levels_received": 1000,
+          "ask_levels_received": 1000,
+          "bid_notional_visible": 1291347.32537,
+          "ask_notional_visible": 1930520.16732,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-HYPE",
+          "symbol": "HYPEUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:14:09.442955+00:00",
+          "bid_levels_received": 862,
+          "ask_levels_received": 916,
+          "bid_notional_visible": 1786023.45866,
+          "ask_notional_visible": 2773416.05022,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        },
+        {
+          "canonical_asset_id": "CPS-SYRUP",
+          "symbol": "SYRUPUSDT",
+          "collection_status": "SUCCESS",
+          "completed_at_utc": "2026-10-01T13:14:11.371498+00:00",
+          "bid_levels_received": 232,
+          "ask_levels_received": 548,
+          "bid_notional_visible": 354510.46905,
+          "ask_notional_visible": 870079.76498,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true,
+          "turnover_days": 7
+        }
+      ]
     }
   ],
-  "updated_at_utc": "2026-10-01T05:38:47.153335+00:00"
+  "updated_at_utc": "2026-10-01T13:14:11.371521+00:00"
 }
