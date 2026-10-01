@@ -2,7 +2,7 @@
 
 **Project:** Crypto Pro Data Feed  
 **Document:** Experimental Capture Extension for Ranking PCP-01  
-**Status:** Experimental / Pre-implementation  
+**Status:** Experimental / Implementation authorized for methodological validation  
 **Date:** 2026-09-30  
 **Scope:** internal methodological pilot only  
 **Stable baseline affected:** none
@@ -13,7 +13,7 @@
 
 This document specifies the minimum experimental extension required for the Crypto Pro Data Feed to supply the Ranking Institucional Simplificado PCP-01.
 
-It does **not** modify the stable v1.0.0 public contract and does not authorize commercial use of any exchange data.
+The extension exists to validate methodology. It does **not** modify the stable v1.0.0 public contract and does not establish commercial data rights.
 
 # 2. Architectural Rule
 
@@ -30,7 +30,7 @@ The stable implementation currently:
 - collects ticker and candlesticks;
 - does not yet provide multi-asset catalogs, multi-exchange normalization, order-book snapshots, QEV mapping, or PCP-01 capture manifests.
 
-The PCP-01 extension must therefore remain isolated from the stable contract until validated.
+The PCP-01 extension must remain isolated from the stable contract until validated.
 
 # 4. Experimental Architecture
 
@@ -66,7 +66,19 @@ Each adapter should expose a common internal interface equivalent to:
 
 Adapters must preserve raw source identifiers and native timestamps.
 
-# 6. Candidate Adapters
+# 6. Pilot Source Qualification
+
+For PCP-01 methodological validation, source qualification requires:
+
+1. documented technical capability;
+2. successful operational dry-run;
+3. auditable provenance and failure semantics.
+
+**Commercial Source Approval is a separate future gate and does not block internal methodological validation.**
+
+This separation does not make a legal conclusion about commercial permissions. It only prevents future production licensing from blocking the methodological experiment.
+
+# 7. Candidate Adapters
 
 Initial candidates:
 - Binance;
@@ -75,9 +87,15 @@ Initial candidates:
 - Bitget;
 - MEXC.
 
-Implementation order must follow QPS approval. A technically documented exchange must not be enabled for an official pilot run while source-use rights remain unresolved.
+Implementation starts with **Binance** because the stable Data Feed already integrates Binance Spot. This minimizes simultaneous engineering changes while the experimental schema is being validated.
 
-# 7. Canonical Market Record
+Additional adapters should be added only when required for:
+- candidate coverage;
+- multi-venue Capacity;
+- source redundancy;
+- sensitivity testing.
+
+# 8. Canonical Market Record
 
 Minimum fields:
 
@@ -95,7 +113,7 @@ raw_provenance
 schema_version
 ```
 
-# 8. Canonical Order Book Snapshot
+# 9. Canonical Order Book Snapshot
 
 Minimum fields:
 
@@ -123,7 +141,7 @@ schema_version
 
 The adapter must not fabricate missing depth.
 
-# 9. Turnover Record
+# 10. Turnover Record
 
 Minimum fields:
 
@@ -144,7 +162,7 @@ collection_status
 provenance
 ```
 
-# 10. Capture Schedule
+# 11. Capture Schedule
 
 For each qualified Asset × Venue × Market:
 
@@ -157,9 +175,9 @@ For each qualified Asset × Venue × Market:
 
 Dry-run data must never be mixed into official PCP-01 capture data.
 
-# 11. RAS Support
+# 12. RAS Support
 
-The producer only supplies market data. It should not assign Absorption states.
+The producer only supplies market data. It must not assign Absorption states.
 
 For PCP-01:
 - RAS = USD 5,000,000 / 24h;
@@ -167,7 +185,7 @@ For PCP-01:
 
 The Ranking/validation layer computes PEC and PR from validated published data.
 
-# 12. Failure Semantics
+# 13. Failure Semantics
 
 Required categories:
 
@@ -182,7 +200,7 @@ Required categories:
 
 Source transport failure must not be converted into market illiquidity.
 
-# 13. Experimental Publication
+# 14. Experimental Publication
 
 Do not overwrite the stable `data/snapshot.json` contract.
 
@@ -193,40 +211,39 @@ data/experimental/pcp-01/
 ├── status.json
 ├── universe/
 ├── capture/
-└── turnover/
+├── turnover/
+└── dry-run/
 ```
 
-Exact filenames may be defined during implementation.
-
-# 14. Validation
+# 15. Validation
 
 Before UFT/T0 activation, require:
 - schema validation;
 - timestamp validation;
 - bid/ask ordering validation;
 - positive price/quantity validation;
-- duplicate-level handling;
 - quote/base consistency;
 - capture-event completeness;
 - provenance presence;
 - retry/error logging;
 - two consecutive hourly dry-run cycles.
 
-# 15. Source Governance
+# 16. Source Governance
 
-Technical API availability is not sufficient for production use.
-
-Every adapter must carry source-governance metadata:
+Each adapter should carry:
 - documentation reference;
-- terms reference;
-- pilot-use approval status;
-- commercial-use approval status;
-- approval date;
+- technical qualification status;
+- pilot operational status;
+- commercial approval status;
 - restrictions/notes.
 
-Commercial source approval is external to the technical adapter and must be explicit.
+For PCP-01 Run A:
+> commercial approval status is informational only.
 
-# 16. Non-goals
+For production/commercial deployment:
+> commercial approval becomes mandatory.
+
+# 17. Non-goals
 
 This extension does not:
 - rank assets;
@@ -238,26 +255,29 @@ This extension does not:
 - replace the stable Data Feed contract;
 - establish commercial data rights.
 
-# 17. Implementation Sequence
+# 18. Implementation Sequence
 
-1. finalize QPS/use-rights gate;
-2. define experimental schemas;
-3. implement one adapter first;
-4. validate normalization;
-5. add remaining approved adapters incrementally;
-6. implement capture scheduler;
-7. run two-cycle dry-run;
-8. publish technical readiness result;
-9. only then permit PCP-01 UFT/T0.
+1. define experimental schemas;
+2. implement Binance pilot adapter/probe;
+3. validate normalization and provenance;
+4. run operational dry-run;
+5. determine whether additional venues are necessary;
+6. add approved experimental adapters incrementally;
+7. implement capture scheduler/manifest;
+8. run two-cycle hourly dry-run;
+9. publish technical readiness result;
+10. only then permit PCP-01 UFT/T0.
 
-# 18. Stop Rule
+# 19. Stop Rule
 
-Do not implement an exchange adapter for the official pilot path if:
-- its required endpoints cannot meet the pilot data contract;
-- the terms/use-rights status is incompatible or unresolved for the intended pilot use;
+Stop an adapter path if:
+- required endpoints cannot meet the pilot data contract;
 - repeated dry-runs show unacceptable reliability;
-- required provenance cannot be preserved.
+- required provenance cannot be preserved;
+- normalization cannot be made deterministic.
+
+Commercial-use concerns remain a future production gate rather than a methodological-pilot stop rule.
 
 ---
 
-**Status:** specification only; no source adapter implementation is authorized by this document.
+**Status:** first experimental adapter implementation authorized; stable contract unchanged.

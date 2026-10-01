@@ -1,0 +1,47 @@
+name: PCP-01 Binance QPS Probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbol:
+        description: Spot symbol used for the technical probe
+        required: true
+        default: BTCUSDT
+      depth_limit:
+        description: Requested Binance order-book depth limit
+        required: true
+        default: "1000"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile experimental probe
+        run: python -m py_compile src/experimental/pcp01/binance_qps_probe.py
+
+      - name: Run Binance QPS probe
+        run: |
+          mkdir -p data/experimental/pcp-01/dry-run
+          python src/experimental/pcp01/binance_qps_probe.py \
+            --symbol "${{ inputs.symbol }}" \
+            --depth-limit "${{ inputs.depth_limit }}" \
+            --output data/experimental/pcp-01/dry-run/binance-${{ inputs.symbol }}.json
+
+      - name: Upload probe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pcp01-binance-qps-probe-${{ inputs.symbol }}
+          path: data/experimental/pcp-01/dry-run/binance-${{ inputs.symbol }}.json
+          if-no-files-found: error
