@@ -2,15 +2,11 @@ name: PCP-01 Binance QPS Probe
 
 on:
   workflow_dispatch:
-    inputs:
-      symbol:
-        description: Spot symbol used for the technical probe
-        required: true
-        default: BTCUSDT
-      depth_limit:
-        description: Requested Binance order-book depth limit
-        required: true
-        default: "1000"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/pcp01-binance-qps-probe.yml"
 
 permissions:
   contents: read
@@ -35,13 +31,13 @@ jobs:
         run: |
           mkdir -p data/experimental/pcp-01/dry-run
           python src/experimental/pcp01/binance_qps_probe.py \
-            --symbol "${{ inputs.symbol }}" \
-            --depth-limit "${{ inputs.depth_limit }}" \
-            --output data/experimental/pcp-01/dry-run/binance-${{ inputs.symbol }}.json
+            --symbol BTCUSDT \
+            --depth-limit 1000 \
+            --output data/experimental/pcp-01/dry-run/binance-BTCUSDT.json
 
       - name: Upload probe artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pcp01-binance-qps-probe-${{ inputs.symbol }}
-          path: data/experimental/pcp-01/dry-run/binance-${{ inputs.symbol }}.json
+          name: pcp01-binance-qps-probe-BTCUSDT
+          path: data/experimental/pcp-01/dry-run/binance-BTCUSDT.json
           if-no-files-found: error
