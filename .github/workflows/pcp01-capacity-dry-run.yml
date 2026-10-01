@@ -35,6 +35,7 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
           p = Path("data/experimental/pcp-01/dry-run/capacity-status.json")
           passed = False
@@ -43,7 +44,7 @@ jobs:
                   passed = json.loads(p.read_text()).get("two_cycle_status") == "PASS"
               except Exception:
                   passed = False
-          with open("$GITHUB_OUTPUT", "a") as fh:
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
               fh.write(f"skip={'true' if passed else 'false'}\n")
           print("already_qualified=", passed)
           PY
