@@ -2,6 +2,11 @@ name: PCP-01 Official Capacity Capture
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - experiment/pcp01-capacity
+    paths:
+      - "data/experimental/pcp-01/capture/activation.json"
 
 permissions:
   contents: write
