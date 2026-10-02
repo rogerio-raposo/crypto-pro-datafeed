@@ -300,7 +300,11 @@ def resample_hourly(candles: Sequence[dict], target: str) -> list[dict]:
         group = groups[bucket]
         flags = set()
         for candle in group:
-            flags.update(candle.get("data_quality_flags", []))
+            flags.update(
+                flag
+                for flag in candle.get("data_quality_flags", [])
+                if flag != "MISSING_INTERVAL"
+            )
         complete = (
             len(group) == expected_count
             and int(group[0]["open_time_us"]) == bucket
