@@ -2,7 +2,7 @@
 
 **Project:** Crypto Pro Suite  
 **Document:** Asset PRO P0 Historical Data Experimental Package  
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Status:** Draft  
 **Owner:** Rogerio Raposo  
 **Language:** English  
@@ -42,20 +42,47 @@ Guiding rule:
 
 > The Data Feed defines what happened. The Asset PRO experimental harness controls what could be known at each replay timestamp.
 
-## 3. Documents
+## 3. ASSET-P0-001 Design Baseline
+
+Planned validation dataset:
+
+- Binance Public Data;
+- Binance Spot;
+- BTCUSDT;
+- 1h native klines;
+- 2025-01-01 00:00 UTC inclusive through 2025-04-01 00:00 UTC exclusive;
+- derived 4h and 1d series;
+- UTC candle boundaries;
+- canonical epoch-microsecond timestamps;
+- SHA-256 integrity.
+
+The main historical validation dataset will be acquired from official monthly archives. The small real golden fixture will use official daily archives around the 2025-01-01 timestamp-unit transition.
+
+## 4. Documents
 
 - [DATASET_CONTRACT.md](DATASET_CONTRACT.md)
 - [HISTORICAL_SOURCE_SPEC.md](HISTORICAL_SOURCE_SPEC.md)
 - [DATA_VALIDATION_SPEC.md](DATA_VALIDATION_SPEC.md)
 - [RESAMPLING_SPEC.md](RESAMPLING_SPEC.md)
 - [PROVENANCE_SPEC.md](PROVENANCE_SPEC.md)
+- [CANDLE_BOUNDARY_POLICY.md](CANDLE_BOUNDARY_POLICY.md)
+- [CANONICAL_SERIALIZATION_SPEC.md](CANONICAL_SERIALIZATION_SPEC.md)
+- [P0_DATASET_PLAN.md](P0_DATASET_PLAN.md)
 
-## 4. Experimental Paths
+## 5. Experimental Paths
 
 - source placeholder: `src/experimental/asset_p0/`
 - fixture/data placeholder: `data/experimental/asset-p0/`
 
 Large historical datasets are not intended to be committed to Git. Reproducibility must rely on immutable identity, provenance, version, checksum, and reconstruction instructions.
+
+## 6. Branch Isolation
+
+Active Asset P0 producer-side work is isolated on branch:
+
+`experiment/asset-p0`
+
+This branch must be freshness-checked against `main` before integration. It must not overwrite parallel PCP-01 experimental work.
 
 ---
 
@@ -64,6 +91,7 @@ Large historical datasets are not intended to be committed to Git. Reproducibili
 | Version | Date | Description |
 |---|---|---|
 | 0.1.0 | 2026-10-02 | Initial experimental package for Asset PRO P0. |
+| 0.2.0 | 2026-10-02 | Added ASSET-P0-001 design baseline, branch-isolation rule, and expanded document index. |
 
 ---
 
