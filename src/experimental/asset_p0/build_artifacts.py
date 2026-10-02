@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -285,6 +285,7 @@ def build_main_dataset(output: Path, cache_dir: Path) -> dict:
         "asset": "BTC",
         "base_asset": "BTC",
         "candle_boundary_policy_id": "asset-p0-utc-boundaries-v0.1.0",
+        "checksum": hashes["native_jsonl"],
         "checksum_algorithm": "SHA-256",
         "dataset_id": "ASSET-P0-001-BTCUSDT-SPOT-1H-2025Q1",
         "dataset_version": MAIN_DATASET_VERSION,
@@ -292,13 +293,16 @@ def build_main_dataset(output: Path, cache_dir: Path) -> dict:
         "derived_4h_records": len(derived_4h),
         "end_timestamp": "2025-04-01T00:00:00Z",
         "hashes": hashes,
+        "ingestion_timestamp": datetime.now(timezone.utc).isoformat(),
         "instrument": "BTCUSDT",
         "market_type": "spot",
         "missing_data_policy_id": "asset-p0-main-contiguous-v0.1.0",
         "native_timeframe": "1h",
         "quote_asset": "USDT",
         "raw_record_count": len(candles),
+        "schema_version": "asset-p0-dataset-manifest-0.1.0",
         "serialization_id": SERIALIZATION_ID,
+        "source_endpoint_or_contract": "Binance Public Data monthly Spot kline archives",
         "source_provider": "Binance Public Data",
         "start_timestamp": "2025-01-01T00:00:00Z",
         "timezone_policy": "UTC",
