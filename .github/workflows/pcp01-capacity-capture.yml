@@ -2,13 +2,6 @@ name: PCP-01 Official Capacity Capture
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "7 * * * *"
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/pcp01-capacity-capture.yml"
 
 permissions:
   contents: write
@@ -17,12 +10,15 @@ concurrency:
   group: pcp01-capacity-official-capture
   cancel-in-progress: false
 
-jobs:
-  capture:
-    runs-on: ubuntu-latest
+env:
+  ACTIVATION: data/experimental/pcp-01/capture/activation.json
+  OUTPUT_ROOT: data/experimental/pcp-01/capture
 
+jobs:
+  validate:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout selected ref
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -30,36 +26,223 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Sync latest main
-        run: git pull --ff-only origin main
+      - name: Sync selected branch
+        run: |
+          git pull --ff-only origin "${GITHUB_REF_NAME}"
 
       - name: Compile official capture producers
         run: |
           python -m py_compile src/experimental/pcp01/binance_qps_probe.py
           python -m py_compile src/experimental/pcp01/pcp01_capacity_capture.py
+          python -m py_compile src/experimental/pcp01/pcp01_capacity_capture_segment.py
           python -m py_compile src/experimental/pcp01/pcp01_turnover_at_t0.py
 
-      - name: Run official hourly capture if activated
+      - name: Validate activation and two-cycle gate
         run: |
-          python src/experimental/pcp01/pcp01_capacity_capture.py \
-            --activation data/experimental/pcp-01/capture/activation.json \
-            --output-root data/experimental/pcp-01/capture
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
 
-      - name: Capture exact seven-day turnover after T0
+          activation = json.loads(Path("data/experimental/pcp-01/capture/activation.json").read_text())
+          status = json.loads(Path("data/experimental/pcp-01/dry-run/capacity-status.json").read_text())
+
+          if status.get("two_cycle_status") != "PASS":
+              raise SystemExit("Two-cycle dry-run gate is not PASS.")
+          if not activation.get("active"):
+              raise SystemExit("Official capture activation is not active.")
+
+          required = ["run_id", "uft_utc", "capture_start_utc", "t0_utc", "horizon_end_utc"]
+          missing = [key for key in required if not activation.get(key)]
+          if missing:
+              raise SystemExit(f"Activation missing fields: {missing}")
+
+          if len(activation.get("qevs", [])) != 9:
+              raise SystemExit("Expected exactly 9 frozen QEVs.")
+
+          parse = lambda x: datetime.fromisoformat(x.replace("Z", "+00:00"))
+          start = parse(activation["capture_start_utc"])
+          t0 = parse(activation["t0_utc"])
+          now = datetime.now(timezone.utc)
+
+          if t0 - start != timedelta(hours=24):
+              raise SystemExit("T0 must equal Capture Start + 24h.")
+          if now >= start:
+              raise SystemExit("Workflow must be dispatched before Capture Start.")
+
+          print("activation_valid=", activation["run_id"], start.isoformat(), t0.isoformat())
+          PY
+
+  segment_00_04:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync selected branch
+        run: git pull --ff-only origin "${GITHUB_REF_NAME}"
+      - name: Capture events 00-04
         run: |
-          python src/experimental/pcp01/pcp01_turnover_at_t0.py \
-            --activation data/experimental/pcp-01/capture/activation.json \
-            --output-root data/experimental/pcp-01/capture
-
-      - name: Persist official experimental capture evidence
+          python src/experimental/pcp01/pcp01_capacity_capture_segment.py \
+            --activation "$ACTIVATION" --output-root "$OUTPUT_ROOT" \
+            --start-index 0 --end-index 4
+      - name: Persist segment
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/experimental/pcp-01/capture
-          if git diff --cached --quiet; then
-            echo "No official capture change to commit."
-          else
-            git commit -m "data: update PCP-01 official Capacity capture"
-            git pull --rebase origin main
-            git push
-          fi
+          git add "$OUTPUT_ROOT"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: capture PCP-01 Capacity events 00-04"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+  segment_05_09:
+    needs: segment_00_04
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync selected branch
+        run: git pull --ff-only origin "${GITHUB_REF_NAME}"
+      - name: Capture events 05-09
+        run: |
+          python src/experimental/pcp01/pcp01_capacity_capture_segment.py \
+            --activation "$ACTIVATION" --output-root "$OUTPUT_ROOT" \
+            --start-index 5 --end-index 9
+      - name: Persist segment
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT_ROOT"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: capture PCP-01 Capacity events 05-09"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+  segment_10_14:
+    needs: segment_05_09
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync selected branch
+        run: git pull --ff-only origin "${GITHUB_REF_NAME}"
+      - name: Capture events 10-14
+        run: |
+          python src/experimental/pcp01/pcp01_capacity_capture_segment.py \
+            --activation "$ACTIVATION" --output-root "$OUTPUT_ROOT" \
+            --start-index 10 --end-index 14
+      - name: Persist segment
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT_ROOT"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: capture PCP-01 Capacity events 10-14"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+  segment_15_19:
+    needs: segment_10_14
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync selected branch
+        run: git pull --ff-only origin "${GITHUB_REF_NAME}"
+      - name: Capture events 15-19
+        run: |
+          python src/experimental/pcp01/pcp01_capacity_capture_segment.py \
+            --activation "$ACTIVATION" --output-root "$OUTPUT_ROOT" \
+            --start-index 15 --end-index 19
+      - name: Persist segment
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "4189822+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT_ROOT"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: capture PCP-01 Capacity events 15-19"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+  segment_20_23:
+    needs: segment_15_19
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync selected branch
+        run: git pull --ff-only origin "${GITHUB_REF_NAME}"
+      - name: Capture events 20-23
+        run: |
+          python src/experimental/pcp01/pcp01_capacity_capture_segment.py \
+            --activation "$ACTIVATION" --output-root "$OUTPUT_ROOT" \
+            --start-index 20 --end-index 23
+      - name: Persist segment
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT_ROOT"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: capture PCP-01 Capacity events 20-23"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+  turnover_at_t0:
+    needs: segment_20_23
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync selected branch
+        run: git pull --ff-only origin "${GITHUB_REF_NAME}"
+      - name: Wait until T0
+        run: |
+          python - <<'PY'
+          import json, time
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          activation = json.loads(Path("data/experimental/pcp-01/capture/activation.json").read_text())
+          t0 = datetime.fromisoformat(activation["t0_utc"].replace("Z", "+00:00"))
+          now = datetime.now(timezone.utc)
+          if now < t0:
+              time.sleep((t0 - now).total_seconds() + 10)
+          PY
+      - name: Capture exact seven-day turnover
+        run: |
+          python src/experimental/pcp01/pcp01_turnover_at_t0.py \
+            --activation "$ACTIVATION" --output-root "$OUTPUT_ROOT"
+      - name: Persist turnover
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT_ROOT"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: capture PCP-01 turnover at T0"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
