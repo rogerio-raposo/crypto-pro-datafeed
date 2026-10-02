@@ -2,7 +2,7 @@
 
 **Project:** Crypto Pro Suite  
 **Document:** Historical Dataset Contract  
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Status:** Draft  
 **Owner:** Rogerio Raposo  
 **Language:** English  
@@ -46,29 +46,51 @@ A dataset used by a frozen experiment shall be immutable. Corrections create a n
 
 ## 3. Canonical Candle Schema
 
-Required fields:
+Required normalized fields:
 
-- instrument;
-- venue;
-- market_type;
-- timeframe;
-- open_time;
-- close_time;
-- open;
-- high;
-- low;
-- close;
-- volume;
-- data_quality_flags;
-- dataset_version.
+- `instrument`;
+- `venue`;
+- `market_type`;
+- `timeframe`;
+- `open_time_us`;
+- `interval_end_us`;
+- `open`;
+- `high`;
+- `low`;
+- `close`;
+- `volume`;
+- `data_quality_flags`;
+- `dataset_version`.
 
 Optional source-dependent fields may include:
 
-- quote_volume;
-- trade_count;
-- source_record_id.
+- `source_close_time_us`;
+- `quote_volume`;
+- `trade_count`;
+- `source_record_id`;
+- `source_timestamp_unit`.
 
-Persistent numeric representation shall avoid binary floating-point ambiguity where it could affect deterministic comparison or hashing.
+### 3.1 Timestamp normalization
+
+The canonical normalized timestamp unit for P0 is **Unix epoch microseconds**.
+
+`interval_end_us` is the exclusive end boundary of the candle interval and is the authoritative availability boundary for causal replay.
+
+Provider-specific close timestamps may be retained separately as `source_close_time_us`, but they shall not replace the canonical interval boundary.
+
+### 3.2 Decimal representation
+
+Price and volume values shall be represented as canonical decimal strings in persisted experiment datasets.
+
+Canonical decimal strings shall:
+
+- use base-10 notation;
+- use no exponent;
+- remove unnecessary leading plus signs;
+- remove unnecessary trailing fractional zeros;
+- represent zero as `"0"`.
+
+This avoids binary floating-point ambiguity in deterministic serialization and hashing.
 
 ## 4. Origin
 
@@ -92,6 +114,7 @@ Dataset identity is not equivalent to storing all historical bytes in Git.
 | Version | Date | Description |
 |---|---|---|
 | 0.1.0 | 2026-10-02 | Initial P0 historical dataset contract. |
+| 0.2.0 | 2026-10-02 | Fixed canonical P0 timestamps to epoch microseconds and defined deterministic decimal persistence. |
 
 ---
 
