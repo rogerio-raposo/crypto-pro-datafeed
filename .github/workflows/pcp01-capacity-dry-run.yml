@@ -2,8 +2,6 @@ name: PCP-01 Capacity Two-Cycle Dry Run
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "17 * * * *"
   push:
     branches:
       - main
@@ -20,6 +18,7 @@ concurrency:
 jobs:
   dry-run:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -40,6 +39,7 @@ jobs:
           import json
           import os
           from pathlib import Path
+
           p = Path("data/experimental/pcp-01/dry-run/capacity-status.json")
           passed = False
           if p.exists():
@@ -47,8 +47,10 @@ jobs:
                   passed = json.loads(p.read_text()).get("two_cycle_status") == "PASS"
               except Exception:
                   passed = False
+
           with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
               fh.write(f"skip={'true' if passed else 'false'}\n")
+
           print("already_qualified=", passed)
           PY
 
@@ -58,21 +60,63 @@ jobs:
           python -m py_compile src/experimental/pcp01/binance_qps_probe.py
           python -m py_compile src/experimental/pcp01/pcp01_capacity_dry_run.py
 
-      - name: Run Capacity dry-run cycle
+      - name: Run controlled cycle A
         if: steps.readiness.outputs.skip != 'true'
         run: |
           mkdir -p data/experimental/pcp-01/dry-run
           python src/experimental/pcp01/pcp01_capacity_dry_run.py \
-            --cycle-id "gh-${{ github.run_id }}-${{ github.run_attempt }}" \
-            --output "data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}.json" \
+            --cycle-id "gh-${{ github.run_id }}-A" \
+            --output "data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}-A.json" \
             --status-file "data/experimental/pcp-01/dry-run/capacity-status.json"
 
-      - name: Upload full dry-run cycle artifact
+      - name: Wait one hour before cycle B
+        if: steps.readiness.outputs.skip != 'true'
+        run: |
+          echo "Cycle A completed. Waiting 3600 seconds before cycle B."
+          sleep 3600
+
+      - name: Run controlled cycle B
+        if: steps.readiness.outputs.skip != 'true'
+        run: |
+          python src/experimental/pcp01/pcp01_capacity_dry_run.py \
+            --cycle-id "gh-${{ github.run_id }}-B" \
+            --output "data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}-B.json" \
+            --status-file "data/experimental/pcp-01/dry-run/capacity-status.json"
+
+      - name: Verify controlled two-cycle qualification
+        if: steps.readiness.outputs.skip != 'true'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          run_id = "${{ github.run_id }}"
+          expected = [f"gh-{run_id}-A", f"gh-{run_id}-B"]
+          p = Path("data/experimental/pcp-01/dry-run/capacity-status.json")
+          status = json.loads(p.read_text())
+
+          if status.get("two_cycle_status") != "PASS":
+              raise SystemExit(
+                  f"two_cycle_status={status.get('two_cycle_status')}; expected PASS"
+              )
+
+          if status.get("qualified_cycle_ids") != expected:
+              raise SystemExit(
+                  "Qualified cycles do not match controlled pair: "
+                  f"{status.get('qualified_cycle_ids')} != {expected}"
+              )
+
+          print("Controlled two-cycle qualification PASS:", expected)
+          PY
+
+      - name: Upload controlled dry-run artifacts
         if: steps.readiness.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: pcp01-capacity-cycle-${{ github.run_id }}
-          path: data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}.json
+          name: pcp01-capacity-controlled-pair-${{ github.run_id }}
+          path: |
+            data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}-A.json
+            data/experimental/pcp-01/dry-run/capacity-cycle-${{ github.run_id }}-B.json
           if-no-files-found: error
 
       - name: Persist lightweight dry-run status
@@ -84,7 +128,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No dry-run status change to commit."
           else
-            git commit -m "data: update PCP-01 Capacity dry-run status"
+            git commit -m "data: qualify PCP-01 controlled two-cycle dry-run"
             git pull --rebase origin main
             git push
           fi
