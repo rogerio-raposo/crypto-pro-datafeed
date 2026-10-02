@@ -2,7 +2,7 @@
 
 **Project:** Crypto Pro Suite  
 **Document:** ASSET-P0-001 Dataset Plan  
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Status:** Draft  
 **Owner:** Rogerio Raposo  
 **Language:** English  
@@ -30,15 +30,25 @@
 
 ## 2. Planned Archive Acquisition
 
-Use official Binance Public Data monthly Spot kline archives for:
+Main dataset uses official Binance Public Data monthly Spot kline archives:
 
 - January 2025;
 - February 2025;
 - March 2025.
 
-Acquisition tooling SHALL verify the downloaded archive and normalized output rather than assume record completeness from archive presence.
+For each archive:
 
-## 3. Dataset Acceptance for P0
+1. acquire ZIP;
+2. acquire corresponding official `.CHECKSUM`;
+3. verify ZIP SHA-256 before extraction;
+4. parse source records using the explicit source timestamp unit;
+5. normalize to canonical epoch microseconds;
+6. validate record continuity and OHLC invariants;
+7. canonicalize decimal strings;
+8. serialize deterministic JSONL;
+9. compute final normalized dataset SHA-256.
+
+## 3. Main Dataset Acceptance
 
 The formal real validation dataset SHALL contain:
 
@@ -46,11 +56,12 @@ The formal real validation dataset SHALL contain:
 - no unresolved duplicate interval;
 - no missing native interval;
 - monotonic interval starts;
+- exact UTC 1h alignment;
 - valid OHLC invariants;
-- complete provenance;
-- canonical dataset checksum.
+- complete archive-checksum provenance;
+- canonical normalized dataset checksum.
 
-Any missing native 1h interval is blocking for ASSET-P0-001. Gap-handling behavior itself is tested separately in the synthetic fixture.
+Any missing native 1h interval is blocking for ASSET-P0-001. Gap-handling behavior is tested separately in the synthetic fixture.
 
 ## 4. Derived Expectations
 
@@ -59,11 +70,42 @@ If the native dataset is complete:
 - expected 4h candles: 540;
 - expected Daily candles: 90.
 
-Counts are acceptance expectations and shall be verified during execution.
+Each 4h candle requires four contiguous native 1h candles.
 
-## 5. Status
+Each Daily candle requires twenty-four contiguous native 1h candles.
 
-No archive has been acquired and no canonical Dataset Manifest has been frozen yet.
+## 5. Real Golden Fixture
+
+Use official daily Spot 1h archive objects for:
+
+- 2024-12-31;
+- 2025-01-01;
+- 2025-01-02.
+
+Expected complete native slots: 72.
+
+Purpose:
+
+- exercise actual archive acquisition;
+- validate official archive checksum handling;
+- validate 4h and Daily UTC boundaries;
+- test explicit normalization across the source timestamp-unit transition at 2025-01-01.
+
+## 6. Synthetic Golden Fixture
+
+The synthetic fixture uses 48 expected hourly slots over two UTC days and intentionally includes:
+
+- one missing native interval;
+- one extreme but OHLC-valid observation;
+- deterministic expected validation flags;
+- deterministic expected resampling status;
+- a checkpoint/restart point.
+
+Synthetic values SHALL be hand-authored and reviewed before fixture hashes are frozen.
+
+## 7. Status
+
+The design inputs are specified, but no archive has been acquired and no canonical Dataset Manifest has been generated.
 
 ---
 
@@ -72,6 +114,7 @@ No archive has been acquired and no canonical Dataset Manifest has been frozen y
 | Version | Date | Description |
 |---|---|---|
 | 0.1.0 | 2026-10-02 | Initial concrete dataset plan for ASSET-P0-001. |
+| 0.2.0 | 2026-10-02 | Added official checksum workflow, concrete archive objects, real fixture acquisition plan and full normalization steps. |
 
 ---
 
