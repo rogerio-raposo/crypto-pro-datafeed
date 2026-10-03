@@ -1,0 +1,126 @@
+name: Asset P1 dataset preparation
+
+on:
+  push:
+    branches:
+      - experiment/asset-p1
+    paths:
+      - ".github/workflows/asset-p1-dataset-preparation.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout P1 branch
+        uses: actions/checkout@v4
+        with:
+          ref: experiment/asset-p1
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build all frozen P1 datasets
+        working-directory: src/experimental/asset_p1
+        run: |
+          rm -rf /tmp/asset-p1-data /tmp/asset-p1-cache
+          python build_datasets.py             --output /tmp/asset-p1-data             --cache /tmp/asset-p1-cache             | tee /tmp/asset-p1-build-summary.json
+
+      - name: Verify dataset index
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          idx=json.loads(Path("/tmp/asset-p1-data/DATASET_INDEX.json").read_text())
+          assert idx["experiment_id"]=="ASSET-P1-D1-001"
+          assert idx["dataset_count"]==24
+          assert set(idx["assets"])=={"BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT"}
+          assert len(idx["segments"])==6
+          for ds in idx["datasets"]:
+              assert ds["records"]["1h"] > 0
+              assert ds["records"]["4h"] > 0
+              assert ds["records"]["1d"] > 0
+          print("dataset_index=PASS")
+          PY
+
+      - name: Stage manifests only
+        run: |
+          rm -rf data/experimental/asset-p1/manifests
+          mkdir -p data/experimental/asset-p1/manifests
+          cp /tmp/asset-p1-data/DATASET_INDEX.json              data/experimental/asset-p1/manifests/DATASET_INDEX.json
+          find /tmp/asset-p1-data -name dataset_manifest.json -print0 | while IFS= read -r -d '' f; do
+            rel="${f#/tmp/asset-p1-data/}"
+            dest="data/experimental/asset-p1/manifests/${rel%/dataset_manifest.json}.json"
+            mkdir -p "$(dirname "$dest")"
+            cp "$f" "$dest"
+          done
+
+      - name: Verify phase access labels
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifests=list(Path("data/experimental/asset-p1/manifests").rglob("*.json"))
+          dataset_manifests=[p for p in manifests if p.name!="DATASET_INDEX.json"]
+          assert len(dataset_manifests)==24
+          for p in dataset_manifests:
+              m=json.loads(p.read_text())
+              if m["phase"]=="HOLDOUT":
+                  assert m["analytical_access"]=="LOCKED"
+              else:
+                  assert m["analytical_access"]=="PRE_EXECUTION_ONLY"
+          print("phase_access_labels=PASS")
+          PY
+
+      - name: Verify P1-only staged changes
+        run: |
+          if git status --porcelain | grep -E "pcp-01|asset-p0"; then
+            echo "Unexpected modification outside asset-p1"
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: Commit manifest evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/experimental/asset-p1/manifests
+          if git diff --cached --quiet; then
+            echo "No manifest changes."
+          else
+            git commit -m "Generate ASSET-P1 dataset manifests"
+            git fetch origin experiment/asset-p1
+            git rebase origin/experiment/asset-p1
+            git push origin HEAD:experiment/asset-p1
+          fi
+
+      - name: Upload DEV datasets
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-p1-dev-datasets
+          path: /tmp/asset-p1-data/dev
+          if-no-files-found: error
+          retention-days: 60
+
+      - name: Upload VAL datasets
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-p1-val-datasets
+          path: /tmp/asset-p1-data/val
+          if-no-files-found: error
+          retention-days: 60
+
+      - name: Upload HOLDOUT datasets
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-p1-holdout-datasets
+          path: /tmp/asset-p1-data/holdout
+          if-no-files-found: error
+          retention-days: 60
