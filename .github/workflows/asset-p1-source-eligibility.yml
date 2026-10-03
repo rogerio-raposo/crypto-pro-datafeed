@@ -1,0 +1,161 @@
+name: Asset P1 source eligibility
+
+on:
+  push:
+    branches:
+      - experiment/asset-p1
+    paths:
+      - ".github/workflows/asset-p1-source-eligibility.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout P1 branch
+        uses: actions/checkout@v4
+        with:
+          ref: experiment/asset-p1
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check monthly archive matrix
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+          import urllib.error
+          from pathlib import Path
+
+          assets = ["BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT"]
+          months = (
+              [f"2021-{m:02d}" for m in range(1,7)] +
+              [f"2022-{m:02d}" for m in range(6,12)] +
+              [f"2023-{m:02d}" for m in range(1,13)] +
+              [f"2024-{m:02d}" for m in range(1,13)]
+          )
+          root = "https://data.binance.vision/data/spot/monthly/klines"
+
+          def exists(url):
+              req = urllib.request.Request(
+                  url,
+                  method="HEAD",
+                  headers={"User-Agent":"Crypto-Pro-DataFeed-ASSET-P1/0.1"}
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=20) as r:
+                      return int(r.status), True
+              except urllib.error.HTTPError as e:
+                  return int(e.code), False
+              except Exception:
+                  # Small GET fallback for hosts/proxies that do not honor HEAD.
+                  req = urllib.request.Request(
+                      url,
+                      headers={
+                          "User-Agent":"Crypto-Pro-DataFeed-ASSET-P1/0.1",
+                          "Range":"bytes=0-0",
+                      }
+                  )
+                  try:
+                      with urllib.request.urlopen(req, timeout=20) as r:
+                          return int(r.status), True
+                  except urllib.error.HTTPError as e:
+                      return int(e.code), False
+                  except Exception:
+                      return 0, False
+
+          rows=[]
+          for asset in assets:
+              for ym in months:
+                  name=f"{asset}-1h-{ym}.zip"
+                  zip_url=f"{root}/{asset}/1h/{name}"
+                  checksum_url=zip_url+".CHECKSUM"
+                  zip_status, zip_ok=exists(zip_url)
+                  checksum_status, checksum_ok=exists(checksum_url)
+                  rows.append({
+                      "asset":asset,
+                      "month":ym,
+                      "zip_url":zip_url,
+                      "zip_http_status":zip_status,
+                      "zip_exists":zip_ok,
+                      "checksum_url":checksum_url,
+                      "checksum_http_status":checksum_status,
+                      "checksum_exists":checksum_ok,
+                      "eligible":zip_ok and checksum_ok,
+                  })
+
+          summary={}
+          for asset in assets:
+              subset=[r for r in rows if r["asset"]==asset]
+              summary[asset]={
+                  "required_months":len(subset),
+                  "eligible_months":sum(r["eligible"] for r in subset),
+                  "eligible":all(r["eligible"] for r in subset),
+                  "missing":[r["month"] for r in subset if not r["eligible"]],
+              }
+
+          result={
+              "experiment_id":"ASSET-P1-D1-001",
+              "assets":assets,
+              "months":months,
+              "expected_archive_checks":len(rows),
+              "rows":rows,
+              "summary":summary,
+              "all_eligible":all(v["eligible"] for v in summary.values()),
+          }
+
+          out=Path("data/experimental/asset-p1")
+          out.mkdir(parents=True,exist_ok=True)
+          (out/"SOURCE_ELIGIBILITY.json").write_text(
+              json.dumps(result,indent=2,sort_keys=True)+"\n",
+              encoding="utf-8"
+          )
+
+          md=[
+              "# ASSET-P1-D1-001 Source Eligibility",
+              "",
+              "| Asset | Required Months | Eligible Months | Eligible | Missing |",
+              "|---|---:|---:|---|---|",
+          ]
+          for asset,v in summary.items():
+              md.append(
+                  f"| {asset} | {v['required_months']} | {v['eligible_months']} | "
+                  f"{'YES' if v['eligible'] else 'NO'} | "
+                  f"{', '.join(v['missing']) if v['missing'] else '-'} |"
+              )
+          md += ["", f"Overall: **{'PASS' if result['all_eligible'] else 'FAIL'}**", ""]
+          (out/"SOURCE_ELIGIBILITY.md").write_text("\n".join(md),encoding="utf-8")
+
+          print(json.dumps(summary,indent=2))
+          if not result["all_eligible"]:
+              raise SystemExit(1)
+          PY
+
+      - name: Verify isolation
+        run: |
+          if git status --porcelain | grep -E "pcp-01|asset-p0"; then
+            echo "Unexpected modification outside asset-p1"
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: Commit eligibility evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/experimental/asset-p1/SOURCE_ELIGIBILITY.json
+          git add data/experimental/asset-p1/SOURCE_ELIGIBILITY.md
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Validate ASSET-P1 source eligibility"
+            git push origin HEAD:experiment/asset-p1
+          fi
