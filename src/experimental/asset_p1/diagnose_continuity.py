@@ -73,6 +73,7 @@ def main() -> int:
                 "segment_id":r["segment_id"],
                 "instrument":r["instrument"],
                 "missing_count":r["missing_count"],
+                "missing_open_times_us":r["missing_open_times_us"],
                 "duplicate_count":r["duplicate_count"],
             }
             for r in rows if r["missing_count"] or r["duplicate_count"]
