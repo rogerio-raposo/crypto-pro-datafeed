@@ -6,6 +6,8 @@ on:
       - experiment/asset-p1
     paths:
       - ".github/workflows/asset-p1-dataset-preparation.yml"
+      - "src/experimental/asset_p1/**"
+      - "docs/experimental/asset-p1/P1_GAP_REGISTRY.md"
 
 permissions:
   contents: write
@@ -30,24 +32,56 @@ jobs:
       - name: Build all frozen P1 datasets
         working-directory: src/experimental/asset_p1
         run: |
+          set -o pipefail
           rm -rf /tmp/asset-p1-data /tmp/asset-p1-cache
           python build_datasets.py             --output /tmp/asset-p1-data             --cache /tmp/asset-p1-cache             | tee /tmp/asset-p1-build-summary.json
 
-      - name: Verify dataset index
+      - name: Verify Revision 01 dataset index
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
+
           idx=json.loads(Path("/tmp/asset-p1-data/DATASET_INDEX.json").read_text())
           assert idx["experiment_id"]=="ASSET-P1-D1-001"
+          assert idx["design_revision"]=="01"
           assert idx["dataset_count"]==24
           assert set(idx["assets"])=={"BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT"}
-          assert len(idx["segments"])==6
+          assert idx["segments"]==["DEV-01","DEV-02","VAL-01","VAL-02","HOLD-01","HOLD-02"]
+
+          expected_gaps={
+              "DEV-01":[
+                  1613016000000000,1614996000000000,
+                  1618884000000000,1618887600000000,
+                  1619326800000000,1619330400000000,1619334000000000,
+              ],
+              "DEV-02":[],
+              "VAL-01":[1679662800000000],
+              "VAL-02":[],
+              "HOLD-01":[],
+              "HOLD-02":[],
+          }
+          assert idx["registered_gaps_us"]==expected_gaps
+
           for ds in idx["datasets"]:
-              assert ds["records"]["1h"] > 0
-              assert ds["records"]["4h"] > 0
-              assert ds["records"]["1d"] > 0
-          print("dataset_index=PASS")
+              r=ds["records"]
+              assert r["native"] > 0
+              assert r["4h_analytical"] > 0
+              assert r["1d_analytical"] > 0
+              assert ds["island_counts"]["4h"] >= 1
+              assert ds["island_counts"]["1d"] >= 1
+              if ds["segment_id"] in {"DEV-01","VAL-01"}:
+                  assert ds["registered_gap_count"] > 0
+                  assert r["4h_incomplete"] > 0
+                  assert r["1d_incomplete"] > 0
+                  assert ds["island_counts"]["4h"] > 1
+                  assert ds["island_counts"]["1d"] > 1
+              else:
+                  assert ds["registered_gap_count"] == 0
+                  assert r["4h_incomplete"] == 0
+                  assert r["1d_incomplete"] == 0
+                  assert ds["island_counts"]=={"4h":1,"1d":1}
+          print("dataset_index_revision01=PASS")
           PY
 
       - name: Stage manifests only
@@ -62,21 +96,32 @@ jobs:
             cp "$f" "$dest"
           done
 
-      - name: Verify phase access labels
+      - name: Verify phase access and Analysis Islands
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          manifests=list(Path("data/experimental/asset-p1/manifests").rglob("*.json"))
-          dataset_manifests=[p for p in manifests if p.name!="DATASET_INDEX.json"]
+
+          root=Path("data/experimental/asset-p1/manifests")
+          dataset_manifests=[p for p in root.rglob("*.json") if p.name!="DATASET_INDEX.json"]
           assert len(dataset_manifests)==24
+
           for p in dataset_manifests:
               m=json.loads(p.read_text())
               if m["phase"]=="HOLDOUT":
                   assert m["analytical_access"]=="LOCKED"
               else:
                   assert m["analytical_access"]=="PRE_EXECUTION_ONLY"
-          print("phase_access_labels=PASS")
+
+              assert m["dataset_version"].endswith("-v0.2.0")
+              assert m["gap_policy_id"]=="asset-p1-synchronized-venue-gap-rev01"
+              assert set(m["analysis_islands"])=={"4h","1d"}
+              for tf,islands in m["analysis_islands"].items():
+                  assert islands
+                  ids=[x["analysis_island_id"] for x in islands]
+                  assert len(ids)==len(set(ids))
+                  assert all(x["record_count"]>0 for x in islands)
+          print("phase_access_and_islands=PASS")
           PY
 
       - name: Verify P1-only staged changes
@@ -95,7 +140,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No manifest changes."
           else
-            git commit -m "Generate ASSET-P1 dataset manifests"
+            git commit -m "Generate ASSET-P1 Revision 01 dataset manifests"
             git fetch origin experiment/asset-p1
             git rebase origin/experiment/asset-p1
             git push origin HEAD:experiment/asset-p1
@@ -104,7 +149,7 @@ jobs:
       - name: Upload DEV datasets
         uses: actions/upload-artifact@v4
         with:
-          name: asset-p1-dev-datasets
+          name: asset-p1-dev-datasets-rev01
           path: /tmp/asset-p1-data/dev
           if-no-files-found: error
           retention-days: 60
@@ -112,7 +157,7 @@ jobs:
       - name: Upload VAL datasets
         uses: actions/upload-artifact@v4
         with:
-          name: asset-p1-val-datasets
+          name: asset-p1-val-datasets-rev01
           path: /tmp/asset-p1-data/val
           if-no-files-found: error
           retention-days: 60
@@ -120,7 +165,7 @@ jobs:
       - name: Upload HOLDOUT datasets
         uses: actions/upload-artifact@v4
         with:
-          name: asset-p1-holdout-datasets
+          name: asset-p1-holdout-datasets-rev01
           path: /tmp/asset-p1-data/holdout
           if-no-files-found: error
           retention-days: 60
