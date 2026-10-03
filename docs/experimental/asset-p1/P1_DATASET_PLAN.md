@@ -2,7 +2,7 @@
 
 **Project:** Crypto Pro Suite  
 **Experiment:** ASSET-P1-D1-001  
-**Status:** Draft / Experimental / Non-Normative
+**Status:** Design Freeze Revision 01 / Experimental / Non-Normative
 
 ---
 
@@ -70,21 +70,27 @@ Expected Binance Public Data Spot archive source unit:
 
 `milliseconds`
 
-P1 nevertheless normalizes to the same canonical epoch-microsecond contract validated by P0.
+P1 normalizes to the canonical epoch-microsecond contract validated by P0.
 
 ## 4. Data Identity
 
-Each asset×segment dataset will receive:
+Each asset×segment dataset receives:
 
 - Dataset ID;
 - Data Version;
 - source archive list;
 - official archive checksums;
 - native normalized SHA-256;
-- derived 4h SHA-256;
-- derived 1d SHA-256;
+- derived 4h audit SHA-256;
+- derived 1d audit SHA-256;
+- analytical 4h SHA-256;
+- analytical 1d SHA-256;
 - record counts;
+- registered-gap count;
+- Analysis-Island counts;
 - source/processing commit identity.
+
+Current dataset generation uses version `v0.2.0` after Design Freeze Revision 01.
 
 ## 5. Holdout Governance
 
@@ -92,11 +98,47 @@ Holdout data may be acquired and checksum-frozen before method tuning, but Holdo
 
 Acquiring Holdout source bytes does not constitute opening Holdout analytical results.
 
-## 6. Continuity
+Holdout manifests remain available for provenance/integrity audit; analytical access remains controlled by the Suite phase gate.
 
-Missing monthly archive or irreparable data gap in any required common segment blocks Design Freeze until:
+## 6. Continuity and Synchronized Venue Gaps
 
-- the segment is revised consistently for all assets; or
-- the affected asset is replaced through an explicit design revision.
+P1 never interpolates missing market candles.
 
-No per-asset silent shortening is allowed.
+A missing native 1h interval is admissible only when all of the following hold:
+
+- the timestamp is listed in `P1_GAP_REGISTRY.md`;
+- the same timestamp is missing across all four pilot instruments;
+- official source archives/checksums are valid;
+- the gap has venue-level evidence consistent with a common trading interruption.
+
+For a registered synchronized venue gap:
+
+- no synthetic candle is inserted;
+- any derived 4h/Daily candle containing the gap is marked incomplete;
+- incomplete derived candles remain audit-only;
+- incomplete candles are excluded from analytical input;
+- complete analytical candles are partitioned into contiguous Analysis Islands;
+- D1 state resets at every island boundary;
+- no swing, regime, Protected Swing, event, duration or match may bridge two islands.
+
+Any additional gap, any asset-specific gap, duplicate interval, or unregistered discontinuity blocks Execution Freeze pending explicit adjudication.
+
+Canonical registry:
+
+`docs/experimental/asset-p1/P1_GAP_REGISTRY.md`
+
+## 7. Current Materialization
+
+Revision 01 dataset-preparation workflow:
+
+- run: `37097201212`;
+- conclusion: `success`;
+- generated dataset manifests: 24 asset×segment cells.
+
+Artifact groups:
+
+- DEV: `asset-p1-dev-datasets-rev01`;
+- VAL: `asset-p1-val-datasets-rev01`;
+- HOLDOUT: `asset-p1-holdout-datasets-rev01`.
+
+Git stores manifests and hashes; large normalized datasets remain workflow artifacts.
