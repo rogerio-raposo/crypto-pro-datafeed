@@ -157,5 +157,7 @@ jobs:
             echo "No changes."
           else
             git commit -m "Validate ASSET-P1 source eligibility"
+            git fetch origin experiment/asset-p1
+            git rebase origin/experiment/asset-p1
             git push origin HEAD:experiment/asset-p1
           fi
