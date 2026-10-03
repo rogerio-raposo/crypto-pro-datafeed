@@ -6,6 +6,7 @@ on:
       - experiment/asset-p1
     paths:
       - ".github/workflows/asset-p1-continuity-diagnostic.yml"
+      - "src/experimental/asset_p1/diagnose_continuity.py"
 
 permissions:
   contents: read
