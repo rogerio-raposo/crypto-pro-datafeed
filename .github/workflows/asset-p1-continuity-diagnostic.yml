@@ -1,0 +1,36 @@
+name: Asset P1 continuity diagnostic
+
+on:
+  push:
+    branches:
+      - experiment/asset-p1
+    paths:
+      - ".github/workflows/asset-p1-continuity-diagnostic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/asset-p1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Diagnose all frozen dataset cells
+        working-directory: src/experimental/asset_p1
+        run: |
+          rm -rf /tmp/asset-p1-cache /tmp/asset-p1-continuity.json
+          python diagnose_continuity.py             --cache /tmp/asset-p1-cache             --output /tmp/asset-p1-continuity.json             | tee /tmp/asset-p1-continuity-summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: asset-p1-continuity-diagnostic
+          path: |
+            /tmp/asset-p1-continuity.json
+            /tmp/asset-p1-continuity-summary.json
+          if-no-files-found: error
+          retention-days: 30
