@@ -1,0 +1,109 @@
+name: Asset P0 source validation
+
+on:
+  push:
+    branches:
+      - experiment/asset-p0
+    paths:
+      - ".github/workflows/asset-p0-source-validation.yml"
+      - "src/experimental/asset_p0/**"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Data Feed branch
+        uses: actions/checkout@v4
+        with:
+          ref: experiment/asset-p0
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record Python runtime
+        run: python --version
+
+      - name: Regenerate synthetic fixture
+        working-directory: src/experimental/asset_p0
+        run: |
+          rm -rf /tmp/asset-p0-synthetic
+          python build_artifacts.py synthetic --output /tmp/asset-p0-synthetic
+          cmp /tmp/asset-p0-synthetic/native.jsonl ../../../data/experimental/asset-p0/fixtures/synthetic/native.jsonl
+          cmp /tmp/asset-p0-synthetic/derived_4h.jsonl ../../../data/experimental/asset-p0/fixtures/synthetic/derived_4h.jsonl
+          cmp /tmp/asset-p0-synthetic/derived_1d.jsonl ../../../data/experimental/asset-p0/fixtures/synthetic/derived_1d.jsonl
+          cmp /tmp/asset-p0-synthetic/expected.json ../../../data/experimental/asset-p0/fixtures/synthetic/expected.json
+
+      - name: Build real golden fixture
+        working-directory: src/experimental/asset_p0
+        run: |
+          rm -rf /tmp/asset-p0-real /tmp/asset-p0-cache-real
+          python build_artifacts.py real-fixture             --output /tmp/asset-p0-real             --cache /tmp/asset-p0-cache-real
+
+      - name: Build main validation dataset
+        working-directory: src/experimental/asset_p0
+        run: |
+          rm -rf /tmp/asset-p0-main /tmp/asset-p0-cache-main
+          python build_artifacts.py main-dataset             --output /tmp/asset-p0-main             --cache /tmp/asset-p0-cache-main
+
+      - name: Checkout frozen Suite replay implementation
+        uses: actions/checkout@v4
+        with:
+          repository: rogerio-raposo/CRYPTO-PRO-SUITE
+          ref: 2bc3ac84397f678cdd9d202dbc8fd484928d8911
+          path: suite
+
+      - name: Run Suite replay regression on Python 3.12
+        run: |
+          python suite/03-componentes/24-asset/experimental/P0/code/regression.py             --fixture-root data/experimental/asset-p0/fixtures/synthetic             | tee /tmp/replay-regression.json
+
+      - name: Stage audit artifacts
+        run: |
+          mkdir -p data/experimental/asset-p0/fixtures/real
+          mkdir -p data/experimental/asset-p0/manifests
+          cp /tmp/asset-p0-real/native.jsonl data/experimental/asset-p0/fixtures/real/native.jsonl
+          cp /tmp/asset-p0-real/derived_4h.jsonl data/experimental/asset-p0/fixtures/real/derived_4h.jsonl
+          cp /tmp/asset-p0-real/derived_1d.jsonl data/experimental/asset-p0/fixtures/real/derived_1d.jsonl
+          cp /tmp/asset-p0-real/manifest.json data/experimental/asset-p0/fixtures/real/manifest.json
+          cp /tmp/asset-p0-main/dataset_manifest.json             data/experimental/asset-p0/manifests/ASSET-P0-001-BTCUSDT-SPOT-1H-2025Q1.json
+          cp /tmp/replay-regression.json             data/experimental/asset-p0/manifests/PYTHON312_REPLAY_REGRESSION.json
+
+      - name: Verify no PCP-01 files are staged
+        run: |
+          if git status --porcelain | grep -q "pcp-01"; then
+            echo "Unexpected PCP-01 path modification"
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: Commit audit artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/experimental/asset-p0/fixtures/real
+          git add data/experimental/asset-p0/manifests
+          if git diff --cached --quiet; then
+            echo "No audit artifact changes to commit."
+          else
+            git commit -m "Generate ASSET-P0 source validation artifacts"
+            git push origin HEAD:experiment/asset-p0
+          fi
+
+      - name: Upload main normalized dataset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-p0-main-dataset
+          path: |
+            /tmp/asset-p0-main/native.jsonl
+            /tmp/asset-p0-main/derived_4h.jsonl
+            /tmp/asset-p0-main/derived_1d.jsonl
+            /tmp/asset-p0-main/dataset_manifest.json
+          if-no-files-found: error
+          retention-days: 30
