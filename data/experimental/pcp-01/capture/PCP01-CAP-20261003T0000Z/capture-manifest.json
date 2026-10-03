@@ -512,9 +512,519 @@
           "buy_child_notional_covered": true
         }
       ]
+    },
+    {
+      "capture_event_id": "PCP01-CAP-20261003T0000Z-E05",
+      "event_index": 5,
+      "target_time_utc": "2026-10-03T05:00:00+00:00",
+      "started_at_utc": "2026-10-03T05:00:10.270776+00:00",
+      "completed_at_utc": "2026-10-03T05:00:22.317838+00:00",
+      "technical_event_status": "PASS",
+      "success_count": 9,
+      "planned_count": 9,
+      "asset_status": [
+        {
+          "canonical_asset_id": "CPS-PLUME",
+          "symbol": "PLUMEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:11.600774+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-OP",
+          "symbol": "OPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:12.586308+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-APT",
+          "symbol": "APTUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:13.672711+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SUI",
+          "symbol": "SUIUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:14.782507+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-LINK",
+          "symbol": "LINKUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:15.853130+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-RSR",
+          "symbol": "RSRUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:17.740932+00:00",
+          "depth_limit": 5000,
+          "depth_escalated": true,
+          "sell_child_notional_covered": false,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-INJ",
+          "symbol": "INJUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:18.952267+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-HYPE",
+          "symbol": "HYPEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:20.355607+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SYRUP",
+          "symbol": "SYRUPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T05:00:21.778498+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        }
+      ]
+    },
+    {
+      "capture_event_id": "PCP01-CAP-20261003T0000Z-E06",
+      "event_index": 6,
+      "target_time_utc": "2026-10-03T06:00:00+00:00",
+      "started_at_utc": "2026-10-03T06:00:10.058671+00:00",
+      "completed_at_utc": "2026-10-03T06:00:22.605549+00:00",
+      "technical_event_status": "PASS",
+      "success_count": 9,
+      "planned_count": 9,
+      "asset_status": [
+        {
+          "canonical_asset_id": "CPS-PLUME",
+          "symbol": "PLUMEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:11.306686+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-OP",
+          "symbol": "OPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:12.467784+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-APT",
+          "symbol": "APTUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:13.788421+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SUI",
+          "symbol": "SUIUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:15.092842+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-LINK",
+          "symbol": "LINKUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:16.164087+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-RSR",
+          "symbol": "RSRUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:18.174340+00:00",
+          "depth_limit": 5000,
+          "depth_escalated": true,
+          "sell_child_notional_covered": false,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-INJ",
+          "symbol": "INJUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:19.352367+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-HYPE",
+          "symbol": "HYPEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:20.720009+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SYRUP",
+          "symbol": "SYRUPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T06:00:21.794239+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        }
+      ]
+    },
+    {
+      "capture_event_id": "PCP01-CAP-20261003T0000Z-E07",
+      "event_index": 7,
+      "target_time_utc": "2026-10-03T07:00:00+00:00",
+      "started_at_utc": "2026-10-03T07:00:10.057004+00:00",
+      "completed_at_utc": "2026-10-03T07:00:21.606709+00:00",
+      "technical_event_status": "PASS",
+      "success_count": 9,
+      "planned_count": 9,
+      "asset_status": [
+        {
+          "canonical_asset_id": "CPS-PLUME",
+          "symbol": "PLUMEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:11.116098+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-OP",
+          "symbol": "OPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:12.097590+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-APT",
+          "symbol": "APTUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:13.177164+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SUI",
+          "symbol": "SUIUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:14.548757+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-LINK",
+          "symbol": "LINKUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:15.733238+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-RSR",
+          "symbol": "RSRUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:17.407257+00:00",
+          "depth_limit": 5000,
+          "depth_escalated": true,
+          "sell_child_notional_covered": false,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-INJ",
+          "symbol": "INJUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:18.718994+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-HYPE",
+          "symbol": "HYPEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:19.916618+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SYRUP",
+          "symbol": "SYRUPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T07:00:21.069711+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        }
+      ]
+    },
+    {
+      "capture_event_id": "PCP01-CAP-20261003T0000Z-E08",
+      "event_index": 8,
+      "target_time_utc": "2026-10-03T08:00:00+00:00",
+      "started_at_utc": "2026-10-03T08:00:10.057489+00:00",
+      "completed_at_utc": "2026-10-03T08:00:22.880754+00:00",
+      "technical_event_status": "PASS",
+      "success_count": 9,
+      "planned_count": 9,
+      "asset_status": [
+        {
+          "canonical_asset_id": "CPS-PLUME",
+          "symbol": "PLUMEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:10.954505+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-OP",
+          "symbol": "OPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:11.917401+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-APT",
+          "symbol": "APTUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:13.017097+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SUI",
+          "symbol": "SUIUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:14.227408+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-LINK",
+          "symbol": "LINKUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:16.630009+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-RSR",
+          "symbol": "RSRUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:18.540914+00:00",
+          "depth_limit": 5000,
+          "depth_escalated": true,
+          "sell_child_notional_covered": false,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-INJ",
+          "symbol": "INJUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:19.726574+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-HYPE",
+          "symbol": "HYPEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:20.946869+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SYRUP",
+          "symbol": "SYRUPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T08:00:22.346976+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        }
+      ]
+    },
+    {
+      "capture_event_id": "PCP01-CAP-20261003T0000Z-E09",
+      "event_index": 9,
+      "target_time_utc": "2026-10-03T09:00:00+00:00",
+      "started_at_utc": "2026-10-03T09:00:10.056916+00:00",
+      "completed_at_utc": "2026-10-03T09:00:21.543779+00:00",
+      "technical_event_status": "PASS",
+      "success_count": 9,
+      "planned_count": 9,
+      "asset_status": [
+        {
+          "canonical_asset_id": "CPS-PLUME",
+          "symbol": "PLUMEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:10.944876+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-OP",
+          "symbol": "OPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:12.225673+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-APT",
+          "symbol": "APTUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:13.307902+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SUI",
+          "symbol": "SUIUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:14.492960+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-LINK",
+          "symbol": "LINKUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:15.693167+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-RSR",
+          "symbol": "RSRUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:17.298968+00:00",
+          "depth_limit": 5000,
+          "depth_escalated": true,
+          "sell_child_notional_covered": false,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-INJ",
+          "symbol": "INJUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:18.871648+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-HYPE",
+          "symbol": "HYPEUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:19.943107+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        },
+        {
+          "canonical_asset_id": "CPS-SYRUP",
+          "symbol": "SYRUPUSDT",
+          "collection_status": "SUCCESS",
+          "observed_at_utc": "2026-10-03T09:00:21.009723+00:00",
+          "depth_limit": 1000,
+          "depth_escalated": false,
+          "sell_child_notional_covered": true,
+          "buy_child_notional_covered": true
+        }
+      ]
     }
   ],
-  "updated_at_utc": "2026-10-03T04:00:26.070723+00:00",
-  "successful_events": 5,
-  "captured_events": 5
+  "updated_at_utc": "2026-10-03T09:00:21.543779+00:00",
+  "successful_events": 10,
+  "captured_events": 10
 }
