@@ -238,6 +238,7 @@ def validate_native_hourly(
     *,
     expected_start_us: int,
     expected_end_us: int,
+    allowed_missing_open_times_us: set[int] | None = None,
 ) -> ValidationResult:
     ordered = sorted((dict(c) for c in candles), key=lambda c: int(c["open_time_us"]))
     seen: set[int] = set()
@@ -275,8 +276,12 @@ def validate_native_hourly(
         critical.append("Dataset start mismatch.")
     if not ordered or int(ordered[-1]["interval_end_us"]) != expected_end_us:
         critical.append("Dataset end mismatch.")
-    if missing:
-        critical.append(f"Missing {len(set(missing))} native interval(s).")
+    allowed = set() if allowed_missing_open_times_us is None else set(allowed_missing_open_times_us)
+    unexpected_missing = sorted(set(missing) - allowed)
+    if unexpected_missing:
+        critical.append(
+            f"Unexpected missing native intervals: {unexpected_missing}"
+        )
     if duplicates:
         critical.append(f"Found {len(set(duplicates))} duplicate interval(s).")
 
@@ -373,3 +378,62 @@ def iso_to_us(value: str) -> int:
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp() * 1_000_000)
+
+
+def assign_analysis_islands(
+    records: Sequence[dict],
+    *,
+    timeframe: str,
+    island_prefix: str,
+) -> tuple[list[dict], list[dict]]:
+    """Return complete analytical records with island IDs plus island metadata."""
+    if timeframe == "4h":
+        step_us = 4 * HOUR_US
+    elif timeframe == "1d":
+        step_us = DAY_US
+    else:
+        raise P1DataError(f"Unsupported island timeframe: {timeframe}")
+
+    complete = [
+        dict(r)
+        for r in sorted(records, key=lambda x: int(x["open_time_us"]))
+        if r.get("complete") is True
+    ]
+    if not complete:
+        return [], []
+
+    islands: list[dict] = []
+    island_no = 1
+    current_id = f"{island_prefix}-{timeframe}-I{island_no:02d}"
+    start_index = 0
+    previous_open: int | None = None
+
+    for idx, record in enumerate(complete):
+        open_us = int(record["open_time_us"])
+        if previous_open is not None and open_us - previous_open != step_us:
+            prior = complete[idx - 1]
+            islands.append(
+                {
+                    "analysis_island_id": current_id,
+                    "timeframe": timeframe,
+                    "start_open_time_us": int(complete[start_index]["open_time_us"]),
+                    "end_interval_end_us": int(prior["interval_end_us"]),
+                    "record_count": idx - start_index,
+                }
+            )
+            island_no += 1
+            current_id = f"{island_prefix}-{timeframe}-I{island_no:02d}"
+            start_index = idx
+        record["analysis_island_id"] = current_id
+        previous_open = open_us
+
+    islands.append(
+        {
+            "analysis_island_id": current_id,
+            "timeframe": timeframe,
+            "start_open_time_us": int(complete[start_index]["open_time_us"]),
+            "end_interval_end_us": int(complete[-1]["interval_end_us"]),
+            "record_count": len(complete) - start_index,
+        }
+    )
+    return complete, islands
